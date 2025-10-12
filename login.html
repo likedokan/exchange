@@ -4,107 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>লগইন/সাইনআপ</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"> </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        /* CSS কোড */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        /* ফন্ট ও ব্যাকগ্রাউন্ড কাস্টমাইজেশন */
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
+            font-family: 'Hind Siliguri', Inter, sans-serif;
+            background-color: #f7f9fc;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
         }
 
-        .dashboard-card {
+        /* ব্র্যান্ডিং কালার - আধুনিক নীল */
+        .brand-blue {
+            background-color: #0d6efd;
+            transition: background-color 0.2s;
+        }
+
+        .brand-blue:hover {
+            background-color: #0b5ed7;
+        }
+
+        .brand-blue-text {
+            color: #0d6efd;
+        }
+
+        /* কার্ড স্টাইল - এলিভেটেড লুক */
+        .app-card {
             background: white;
-            padding: 2rem;
-            border-radius: 1.5rem;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 400px;
-            transition: transform 0.3s ease;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e9ecef;
         }
 
-        h2 {
-            text-align: center;
-            color: #1f2937;
-            margin-bottom: 1.5rem;
-            font-size: 1.75rem;
+        /* ইনপুট স্টাইলিং */
+        .app-input {
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 16px;
+            background-color: white;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #4b5563;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.75rem;
-            font-size: 1rem;
-            transition: border-color 0.3s;
-        }
-
-        .form-group input:focus {
+        .app-input:focus {
             outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
         }
 
-        .btn {
-            width: 100%;
-            padding: 0.75rem;
-            border: none;
-            border-radius: 0.75rem;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 1rem;
-            transition: background-color 0.3s, transform 0.1s;
-        }
-
-        .btn-primary {
-            background-color: #3b82f6;
-            color: white;
-            margin-top: 1.5rem;
-        }
-
-        .btn-primary:hover {
-            background-color: #2563eb;
-            transform: translateY(-1px);
-        }
-
-        .switch-link {
-            display: block;
-            text-align: center;
-            margin-top: 1rem;
-            color: #3b82f6;
-            text-decoration: none;
-            font-weight: 500;
-            cursor: pointer;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        /* Notification Styling */
+        /* নোটিফিকেশন স্টাইলিং */
         .notification {
             position: fixed;
             top: 20px;
@@ -129,42 +82,67 @@
         .notification.error { background-color: #ef4444; }
     </style>
 </head>
-<body>
+<body class="p-4 flex flex-col items-center justify-center">
 
-    <div class="dashboard-card">
+    <div class="app-card w-full max-w-sm p-6 md:p-8">
         
+        <header class="text-center mb-6">
+            <h1 class="text-3xl font-extrabold brand-blue-text mb-2">ENGAGEHUB</h1>
+            <p class="text-gray-500 font-semibold">আপনার ডিজিটাল এঙ্গেজমেন্ট পার্টনার</p>
+        </header>
+
         <form id="login-form">
-            <h2>লগইন</h2>
-            <div class="form-group">
-                <label for="login-email"><i class="fas fa-envelope"></i> ইমেইল</label>
-                <input type="email" id="login-email" required>
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">লগইন করুন</h2>
+            <div class="mb-4">
+                <label for="login-email" class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-envelope mr-2"></i> ইমেইল
+                </label>
+                <input type="email" id="login-email" class="app-input w-full" required>
             </div>
-            <div class="form-group">
-                <label for="login-password"><i class="fas fa-lock"></i> পাসওয়ার্ড</label>
-                <input type="password" id="login-password" required>
+            <div class="mb-6">
+                <label for="login-password" class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-lock mr-2"></i> পাসওয়ার্ড
+                </label>
+                <input type="password" id="login-password" class="app-input w-full" required>
             </div>
-            <button type="submit" class="btn btn-primary">লগইন</button>
-            <a onclick="showRegister()" class="switch-link">অ্যাকাউন্ট নেই? সাইনআপ করুন</a>
+            <button type="submit" class="w-full brand-blue text-white font-bold py-3 px-4 rounded-lg hover:shadow-lg transition duration-200">
+                লগইন
+            </button>
+            <a onclick="showRegister()" class="block text-center mt-4 text-sm font-semibold brand-blue-text hover:underline cursor-pointer">
+                অ্যাকাউন্ট নেই? সাইনআপ করুন
+            </a>
         </form>
 
         <form id="register-form" class="hidden">
-            <h2>সাইনআপ</h2>
-            <div class="form-group">
-                <label for="register-email"><i class="fas fa-envelope"></i> ইমেইল</label>
-                <input type="email" id="register-email" required>
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">সাইনআপ করুন</h2>
+            <div class="mb-4">
+                <label for="register-email" class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-envelope mr-2"></i> ইমেইল
+                </label>
+                <input type="email" id="register-email" class="app-input w-full" required>
             </div>
-            <div class="form-group">
-                <label for="register-password"><i class="fas fa-lock"></i> পাসওয়ার্ড (৬+ অক্ষর)</label>
-                <input type="password" id="register-password" required>
+            <div class="mb-4">
+                <label for="register-password" class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-lock mr-2"></i> পাসওয়ার্ড (৬+ অক্ষর)
+                </label>
+                <input type="password" id="register-password" class="app-input w-full" required>
             </div>
-            <div class="form-group">
-                <label for="referral-code"><i class="fas fa-user-plus"></i> রেফারেল কোড (ঐচ্ছিক)</label>
-                <input type="text" id="referral-code" placeholder="ঐচ্ছিক">
+            <div class="mb-6">
+                <label for="referral-code" class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-user-plus mr-2"></i> রেফারেল কোড (ঐচ্ছিক)
+                </label>
+                <input type="text" id="referral-code" class="app-input w-full" placeholder="ঐচ্ছিক">
             </div>
-            <button type="submit" class="btn btn-primary">সাইনআপ</button>
-            <a onclick="showLogin()" class="switch-link">ইতিমধ্যেই অ্যাকাউন্ট আছে? লগইন করুন</a>
+            <button type="submit" class="w-full brand-blue text-white font-bold py-3 px-4 rounded-lg hover:shadow-lg transition duration-200">
+                সাইনআপ
+            </button>
+            <a onclick="showLogin()" class="block text-center mt-4 text-sm font-semibold brand-blue-text hover:underline cursor-pointer">
+                ইতিমধ্যেই অ্যাকাউন্ট আছে? লগইন করুন
+            </a>
         </form>
     </div>
+
+    <div id="notification-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
 
     <script type="module" src="./rtdb-config.js"></script>
     <script type="module">
@@ -184,7 +162,7 @@
             try {
                 await signInWithEmailAndPassword(auth, email, password);
                 showNotification("লগইন সফল হয়েছে! আপনাকে ড্যাশবোর্ডে নিয়ে যাওয়া হচ্ছে।", 'success');
-                setTimeout(() => { window.location.href = "xchange.html"; }, 1500);
+                setTimeout(() => { window.location.href = "index.html"; }, 1500); // পরিবর্তিত: xchange.html থেকে index.html
             } catch (error) {
                 console.error("Login Error:", error);
                 showNotification("লগইন ব্যর্থ হয়েছে। ভুল ইমেইল বা পাসওয়ার্ড।", 'error');
@@ -202,6 +180,7 @@
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
                 
+                // Firestore-এর বদলে Realtime Database ব্যবহার করা হচ্ছে
                 const userRef = ref(db, 'users/' + user.uid);
                 
                 // ১. নতুন ব্যবহারকারীর ডেটা ইনিশিয়ালাইজ করা
@@ -213,10 +192,10 @@
                     tasksRejected: 0,
                     referredBy: referredBy,
                     facebookName: null,
-                    facebookLinks: ['#'],
-                    isVerified: false 
+                    isVerified: false,
+                    createdAt: Date.now() // নতুন ফিল্ড যুক্ত করা হয়েছে
                 };
-
+                
                 // ২. রেফারেল লজিক যাচাই ও পয়েন্ট প্রদান
                 if (referredBy && referredBy !== user.uid) {
                     const referrerRef = ref(db, 'users/' + referredBy);
@@ -244,7 +223,7 @@
                 await set(userRef, newUserInitialData);
 
                 showNotification("সাইনআপ সফল হয়েছে! আপনাকে ড্যাশবোর্ডে নিয়ে যাওয়া হচ্ছে।", 'success');
-                setTimeout(() => { window.location.href = "xchange.html"; }, 1500);
+                setTimeout(() => { window.location.href = "index.html"; }, 1500); // পরিবর্তিত: xchange.html থেকে index.html
             } catch (error) {
                 console.error("Registration Error:", error);
                 if (error.code === 'auth/email-already-in-use') {
@@ -267,4 +246,3 @@
     </script>
 </body>
 </html>
-
