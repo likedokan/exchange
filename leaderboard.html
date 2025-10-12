@@ -4,123 +4,117 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>লিডারবোর্ড</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"> </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
+        /* ফন্ট ও ব্যাকগ্রাউন্ড কাস্টমাইজেশন */
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
+            font-family: 'Hind Siliguri', Inter, sans-serif;
+            background-color: #f7f9fc;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem 1rem;
         }
-        .container {
-            max-width: 600px;
-            width: 100%;
-            margin: 0 auto;
+
+        /* ব্র্যান্ডিং কালার - আধুনিক নীল */
+        .brand-blue {
+            background-color: #0d6efd;
+            transition: background-color 0.2s;
         }
-        .leaderboard-card {
+        
+        .brand-blue:hover {
+            background-color: #0b5ed7;
+        }
+
+        .brand-blue-text {
+            color: #0d6efd;
+        }
+
+        /* কার্ড স্টাইল - এলিভেটেড লুক */
+        .app-card {
             background: white;
-            padding: 2rem;
-            border-radius: 1.5rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            text-align: center;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e9ecef;
+            transition: box-shadow 0.3s, transform 0.2s;
         }
-        .leaderboard-card h2 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 1.5rem;
+
+        .app-card:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
         }
-        .leaderboard-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
+
+        /* লিডারবোর্ড আইটেম স্টাইল */
         .leaderboard-item {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 1rem 1.25rem;
-            margin-bottom: 0.75rem;
-            background-color: #f9fafb;
-            border-radius: 1rem;
-            transition: all 0.3s ease;
+            padding: 1rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
+
         .leaderboard-item:hover {
-            background-color: #f3f4f6;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transform: translateX(5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
         }
+
         .leaderboard-item.first {
-            background-color: #ffda79;
-            box-shadow: 0 4px 15px rgba(255, 218, 121, 0.5);
+            background-color: #FFD700; /* Gold */
+            color: #8B4513; /* SaddleBrown */
+            font-weight: 700;
         }
+        
         .leaderboard-item.second {
-            background-color: #c9d6df;
+            background-color: #C0C0C0; /* Silver */
+            color: #495057;
         }
+        
         .leaderboard-item.third {
-            background-color: #e5b6a7;
+            background-color: #CD7F32; /* Bronze */
+            color: #FFF;
         }
-        .leaderboard-rank {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #4b5563;
-        }
-        .leaderboard-name {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #1f2937;
-            flex-grow: 1;
-            text-align: left;
-            margin-left: 1rem;
-        }
-        .leaderboard-points {
-            font-size: 1.125rem;
-            font-weight: 700;
-            color: #22c55e;
-        }
-        .back-button-container {
-            margin-top: 1.5rem;
-            text-align: center;
-        }
-        .back-button {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 9999px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-            background-color: #3b82f6;
-            color: white;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .back-button:hover {
-            background-color: #2563eb;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        
+        /* মেডেল আইকন স্টাইল */
+        .medal-icon {
+            font-size: 1.5rem;
+            margin-right: 0.75rem;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="leaderboard-card">
-            <h2>🥇 লিডারবোর্ড 🥈</h2>
-            <ul class="leaderboard-list" id="leaderboard-list">
+<body class="p-4 flex flex-col items-center justify-center">
+
+    <div class="container max-w-2xl w-full">
+        
+        <header class="app-card p-6 text-center mb-6 md:mb-8">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800 flex items-center justify-center gap-4">
+                <i class="fas fa-crown text-yellow-500 text-3xl md:text-4xl"></i>
+                পয়েন্ট লিডারবোর্ড
+                <i class="fas fa-trophy text-blue-500 text-3xl md:text-4xl"></i>
+            </h1>
+        </header>
+
+        <main class="app-card p-4 md:p-6">
+            <h2 class="text-2xl font-bold text-gray-700 mb-6 text-center border-b pb-4">শীর্ষ ১০ ব্যবহারকারী</h2>
+            <ul class="space-y-4" id="leaderboard-list">
                 </ul>
-            <div class="back-button-container">
-                <a href="xchange.html" class="back-button">ড্যাশবোর্ডে ফিরে যান</a>
-            </div>
+        </main>
+
+        <div class="mt-8 text-center">
+            <a href="index.html" class="inline-flex items-center brand-blue text-white font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
+                <i class="fas fa-arrow-left mr-2"></i>
+                ড্যাশবোর্ডে ফিরে যান
+            </a>
         </div>
+
     </div>
 
     <script type="module">
         import { rtdb, ref, onValue, query, orderByChild, limitToLast } from "./rtdb-config.js";
-
+        
         document.addEventListener('DOMContentLoaded', () => {
             const leaderboardList = document.getElementById('leaderboard-list');
             
@@ -132,11 +126,11 @@
                 leaderboardList.innerHTML = '';
                 
                 if (!usersData) {
-                    leaderboardList.innerHTML = '<p style="text-align: center; color: #6b7280;">কোনো ব্যবহারকারী পাওয়া যায়নি।</p>';
+                    leaderboardList.innerHTML = '<li class="text-center py-6 text-gray-500 text-lg">কোনো ব্যবহারকারী পাওয়া যায়নি।</li>';
                     return;
                 }
 
-                let sortedUsers = Object.keys(usersData).map(key => usersData[key]);
+                let sortedUsers = Object.keys(usersData).map(key => ({ id: key, ...usersData[key] }));
                 
                 sortedUsers.sort((a, b) => (b.points || 0) - (a.points || 0));
 
@@ -148,15 +142,26 @@
                     const listItem = document.createElement('li');
                     
                     let rankClass = '';
-                    if (rank === 1) rankClass = 'first';
-                    else if (rank === 2) rankClass = 'second';
-                    else if (rank === 3) rankClass = 'third';
+                    let rankIcon = `<span class="w-8 h-8 flex items-center justify-center text-lg font-bold">${rank}</span>`;
 
-                    listItem.className = `leaderboard-item ${rankClass}`;
+                    if (rank === 1) {
+                        rankClass = 'first';
+                        rankIcon = '<i class="fas fa-medal medal-icon text-white drop-shadow-md" style="color: #FFD700;"></i>';
+                    } else if (rank === 2) {
+                        rankClass = 'second';
+                        rankIcon = '<i class="fas fa-medal medal-icon text-gray-600"></i>';
+                    } else if (rank === 3) {
+                        rankClass = 'third';
+                        rankIcon = '<i class="fas fa-medal medal-icon text-orange-600"></i>';
+                    }
+
+                    listItem.className = `leaderboard-item ${rankClass} flex items-center justify-between font-bold`;
                     listItem.innerHTML = `
-                        <span class="leaderboard-rank">${rank}</span>
-                        <span class="leaderboard-name">${user.facebookName || 'ব্যবহারকারী'}</span>
-                        <span class="leaderboard-points">${(user.points || 0).toLocaleString('bn-BD')} পয়েন্ট</span>
+                        <div class="flex items-center">
+                            ${rankIcon}
+                            <span class="text-base md:text-lg flex-grow">${user.facebookName || 'ব্যবহারকারী'}</span>
+                        </div>
+                        <span class="text-lg md:text-xl font-extrabold text-green-600">${(user.points || 0).toLocaleString('bn-BD')} পয়েন্ট</span>
                     `;
                     leaderboardList.appendChild(listItem);
                     rank++;
