@@ -4,79 +4,161 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>এডমিন ড্যাশবোর্ড</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"> </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        /* CSS কোড */
-        body { font-family: 'Inter', sans-serif; background: #f0f2f5; color: #333; padding: 2rem; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #1f2937; margin-bottom: 1.5rem; }
-        .tab-container { margin-top: 1.5rem; }
-        .tabs { display: flex; gap: 1rem; margin-bottom: 1rem; }
-        .tab { padding: 0.75rem 1.5rem; border: none; background: #e5e7eb; border-radius: 9999px; cursor: pointer; font-weight: 600; }
-        .tab.active { background: #3b82f6; color: white; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-        th, td { padding: 12px; border: 1px solid #e5e7eb; text-align: left; }
-        th { background-color: #f3f4f6; font-weight: 700; }
-        .btn { padding: 0.5rem 1rem; border: none; border-radius: 9999px; cursor: pointer; font-weight: 600; font-size: 0.875rem; }
-        .btn-success { background-color: #22c55e; color: white; }
-        .btn-danger { background-color: #ef4444; color: white; }
-        .btn-primary { background-color: #3b82f6; color: white; }
+        /* ফন্ট ও ব্যাকগ্রাউন্ড কাস্টমাইজেশন */
+        body {
+            font-family: 'Hind Siliguri', Inter, sans-serif;
+            background-color: #f7f9fc;
+        }
+
+        /* ব্র্যান্ডিং কালার - আধুনিক নীল */
+        .brand-blue {
+            background-color: #0d6efd;
+            transition: background-color 0.2s;
+        }
+
+        .brand-blue:hover {
+            background-color: #0b5ed7;
+        }
+
+        .brand-blue-text {
+            color: #0d6efd;
+        }
+
+        /* কার্ড স্টাইল - এলিভেটেড লুক */
+        .app-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e9ecef;
+            transition: box-shadow 0.3s, transform 0.2s;
+        }
+
+        .app-card:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
+        }
+
+        /* টেবিল স্টাইলিং */
+        .app-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .app-table th, .app-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .app-table thead th {
+            background-color: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+            text-align: left;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+        }
+
+        .app-table tbody tr:last-child td {
+            border-bottom: none;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>এডমিন ড্যাশবোর্ড</h1>
+    
+    <div class="container max-w-6xl mx-auto p-4 md:p-8">
+        <header class="app-card p-6 text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 flex items-center justify-center gap-4">
+                <i class="fas fa-tools brand-blue-text"></i>
+                এডমিন ড্যাশবোর্ড
+            </h1>
+        </header>
         
-        <div class="tabs">
-            <button class="tab active" data-tab="users">ব্যবহারকারী</button>
-            <button class="tab" data-tab="tasks">কাজসমূহ</button>
-        </div>
+        <div class="app-card p-6">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 border-b pb-4">
+                <h2 class="text-xl font-bold text-gray-800 mb-4 md:mb-0">ব্যবস্থাপনা প্যানেল</h2>
+                <div class="tabs flex flex-wrap gap-2 md:gap-4">
+                    <button class="tab px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-200 bg-gray-200 text-gray-700 hover:bg-gray-300 active" data-tab="users">
+                        <i class="fas fa-users mr-2"></i> ব্যবহারকারী
+                    </button>
+                    <button class="tab px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-200 bg-gray-200 text-gray-700 hover:bg-gray-300" data-tab="tasks">
+                        <i class="fas fa-list-check mr-2"></i> কাজসমূহ
+                    </button>
+                    <button class="tab px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-200 bg-gray-200 text-gray-700 hover:bg-gray-300" data-tab="proofs">
+                        <i class="fas fa-file-circle-check mr-2"></i> প্রুফ রিভিউ
+                    </button>
+                </div>
+            </div>
 
-        <div id="users" class="tab-content active">
-            <h2>ব্যবহারকারী ব্যবস্থাপনা</h2>
-            <table id="users-table">
-                <thead>
-                    <tr>
-                        <th>ইউজার ID</th>
-                        <th>নাম</th>
-                        <th>ইমেইল</th>
-                        <th>পয়েন্ট</th>
-                        <th>ভেরিফাইড</th>
-                        <th>অ্যাকশন</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    </tbody>
-            </table>
-        </div>
+            <div id="users" class="tab-content active">
+                <h3 class="text-2xl font-semibold text-gray-700 mb-4">ব্যবহারকারী তালিকা</h3>
+                <div class="overflow-x-auto">
+                    <table class="app-table">
+                        <thead>
+                            <tr>
+                                <th>ইউজার ID</th>
+                                <th>নাম</th>
+                                <th>পয়েন্ট</th>
+                                <th>ভেরিফাইড</th>
+                                <th>অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
+                </div>
+            </div>
 
-        <div id="tasks" class="tab-content">
-            <h2>কাজসমূহ ব্যবস্থাপনা</h2>
-            <table id="tasks-table">
-                <thead>
-                    <tr>
-                        <th>আইডি</th>
-                        <th>প্রকার</th>
-                        <th>লিংক</th>
-                        <th>পয়েন্ট</th>
-                        <th>অবস্থা</th>
-                        <th>অ্যাকশন</th>
-                    </tr>
-</thead>
-                <tbody>
-                    </tbody>
-            </table>
+            <div id="tasks" class="tab-content">
+                <h3 class="text-2xl font-semibold text-gray-700 mb-4">কাজসমূহ তালিকা</h3>
+                <div class="overflow-x-auto">
+                    <table class="app-table">
+                        <thead>
+                            <tr>
+                                <th>আইডি</th>
+                                <th>প্রকার</th>
+                                <th>লিংক</th>
+                                <th>পয়েন্ট</th>
+                                <th>অবস্থা</th>
+                                <th>অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div id="proofs" class="tab-content">
+                <h3 class="text-2xl font-semibold text-gray-700 mb-4">পর্যালোচনা করার জন্য প্রুফ</h3>
+                <div id="proofs-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    </div>
+            </div>
         </div>
     </div>
     
     <script type="module">
-        import { rtdb, ref, onValue, update } from './rtdb-config.js';
+        // Firebase imports from rtdb-config.js
+        import { rtdb, ref, onValue, update, remove, get } from './rtdb-config.js';
 
-        // Get references to the tables
-        const usersTableBody = document.querySelector('#users-table tbody');
-        const tasksTableBody = document.querySelector('#tasks-table tbody');
+        // Get references to the DOM elements
+        const usersTableBody = document.querySelector('#users table tbody');
+        const tasksTableBody = document.querySelector('#tasks table tbody');
+        const proofsGrid = document.getElementById('proofs-grid');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
 
         // Function to render users table
         const renderUsers = (users) => {
@@ -84,15 +166,22 @@
             for (const userId in users) {
                 const user = users[userId];
                 const row = document.createElement('tr');
+                const displayName = user.facebookName || 'N/A';
+                const isVerified = user.isVerified || false;
+                
                 row.innerHTML = `
-                    <td>${userId}</td>
-                    <td>${user.facebookName || 'N/A'}</td>
-                    <td>${user.email || 'N/A'}</td>
-                    <td>${(user.points || 0).toLocaleString('bn-BD')}</td>
-                    <td>${user.isVerified ? 'হ্যাঁ' : 'না'}</td>
+                    <td class="text-sm text-gray-500 font-mono break-all">${userId.substring(0, 10)}...</td>
+                    <td class="font-medium text-gray-800">${displayName}</td>
+                    <td class="font-semibold text-green-600">${(user.points || 0).toLocaleString('bn-BD')}</td>
                     <td>
-                        <button class="btn btn-primary" onclick="toggleVerification('${userId}', ${user.isVerified})">
-                            ${user.isVerified ? 'ভেরিফিকেশন সরান' : 'ভেরিফাই করুন'}
+                        <span class="px-2 py-1 rounded-full text-xs font-semibold ${isVerified ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                            ${isVerified ? 'হ্যাঁ' : 'না'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="px-4 py-2 rounded-full text-sm font-bold text-white transition-colors duration-200 ${isVerified ? 'bg-red-500 hover:bg-red-600' : 'brand-blue hover:brightness-110'}" onclick="toggleVerification('${userId}', ${isVerified})">
+                            <i class="fas ${isVerified ? 'fa-ban' : 'fa-user-check'} mr-2"></i>
+                            ${isVerified ? 'ভেরিফিকেশন সরান' : 'ভেরিফাই করুন'}
                         </button>
                     </td>
                 `;
@@ -103,36 +192,109 @@
         // Function to render tasks table
         const renderTasks = (tasks) => {
             tasksTableBody.innerHTML = '';
-            // কাজগুলো নতুন থেকে পুরোনো ক্রমে সাজানো
             const sortedTasks = Object.keys(tasks).map(key => ({ id: key, ...tasks[key] })).sort((a, b) => b.createdAt - a.createdAt);
 
             sortedTasks.forEach((task) => {
                 const row = document.createElement('tr');
+                const taskStatus = task.status || 'N/A';
+                const statusColor = taskStatus === 'active' ? 'text-green-600' : 'text-red-600';
+
                 row.innerHTML = `
-                    <td>${task.id}</td>
-                    <td>${task.taskType || 'N/A'}</td>
-                    <td><a href="${task.taskLink}" target="_blank">${task.taskLink ? task.taskLink.substring(0, 30) + '...' : 'N/A'}</a></td>
-                    <td>${(task.pointsPerTask || 0).toLocaleString('bn-BD')}</td>
-                    <td>${task.status || 'N/A'}</td>
+                    <td class="text-sm text-gray-500 font-mono break-all">${task.id.substring(0, 10)}...</td>
+                    <td class="font-medium">${task.taskType || 'N/A'}</td>
+                    <td><a href="${task.taskLink}" target="_blank" class="brand-blue-text hover:underline">${task.taskLink ? task.taskLink.substring(0, 30) + '...' : 'N/A'}</a></td>
+                    <td class="font-semibold text-yellow-600">${(task.pointsPerTask || 0).toLocaleString('bn-BD')}</td>
+                    <td class="font-medium ${statusColor}">${taskStatus === 'active' ? 'সক্রিয়' : 'বন্ধ'}</td>
                     <td>
-                        ${task.status === 'active' ? 
-                            `<button class="btn btn-danger" onclick="closeTask('${task.id}')">বন্ধ করুন</button>`
-                        : `<span style="font-size: 0.8rem; color: #6b7280;">স্থায়ীভাবে বন্ধ</span>`}
+                        ${taskStatus === 'active' ? 
+                            `<button class="px-4 py-2 rounded-full text-sm font-bold text-white transition-colors duration-200 bg-red-500 hover:bg-red-600" onclick="closeTask('${task.id}')">
+                                <i class="fas fa-times-circle mr-2"></i> বন্ধ করুন
+                            </button>`
+                        : `<span class="text-gray-500 text-sm italic">স্থায়ীভাবে বন্ধ</span>`}
                     </td>
                 `;
                 tasksTableBody.appendChild(row);
             });
         };
 
+        // Function to render proofs
+        const renderProofs = (tasks) => {
+            proofsGrid.innerHTML = '';
+            let proofsFound = false;
+            
+            for (const taskId in tasks) {
+                const task = tasks[taskId];
+                if (task.proofs) {
+                    for (const proofId in task.proofs) {
+                        const proof = task.proofs[proofId];
+                        
+                        // শুধুমাত্র 'pending' স্ট্যাটাসের প্রুফগুলো দেখানো হচ্ছে
+                        if (proof.status === 'pending') {
+                            proofsFound = true;
+                            const proofCard = `
+                                <div class="app-card p-5">
+                                    <div class="flex items-center justify-between mb-4 pb-4 border-b">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-xl font-bold brand-blue-text">
+                                                ${proof.facebookName.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <h4 class="font-semibold text-gray-800">${proof.facebookName}</h4>
+                                                <p class="text-sm text-gray-500 font-mono break-all">
+                                                    ইউজার আইডি: ${proof.userId.substring(0, 10)}...
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-3 mb-6">
+                                        <p class="text-sm">
+                                            <span class="font-medium text-gray-700">টাস্ক প্রকার:</span> 
+                                            <span class="font-semibold text-gray-900">${task.taskType}</span>
+                                        </p>
+                                        <p class="text-sm">
+                                            <span class="font-medium text-gray-700">টাস্ক লিংক:</span> 
+                                            <a href="${task.taskLink}" target="_blank" class="brand-blue-text hover:underline break-all">${task.taskLink}</a>
+                                        </p>
+                                        <p class="text-sm">
+                                            <span class="font-medium text-gray-700">ফেসবুক লিংক:</span> 
+                                            <a href="${proof.facebookLink}" target="_blank" class="brand-blue-text hover:underline break-all">${proof.facebookLink}</a>
+                                        </p>
+                                        <p class="text-sm">
+                                            <span class="font-medium text-gray-700">পয়েন্ট:</span> 
+                                            <span class="font-semibold text-green-600">+${(task.pointsPerTask).toLocaleString('bn-BD')}</span>
+                                        </p>
+                                    </div>
+                                    <div class="flex gap-4">
+                                        <button class="flex-1 brand-blue text-white py-2.5 rounded-lg font-bold hover:brightness-110 transition duration-200" onclick="approveProof('${taskId}', '${proofId}', '${proof.userId}', ${task.pointsPerTask})">
+                                            <i class="fas fa-thumbs-up mr-2"></i> অনুমোদন
+                                        </button>
+                                        <button class="flex-1 bg-red-500 text-white py-2.5 rounded-lg font-bold hover:bg-red-600 transition duration-200" onclick="rejectProof('${taskId}', '${proofId}', '${proof.userId}')">
+                                            <i class="fas fa-times-circle mr-2"></i> বাতিল
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                            proofsGrid.insertAdjacentHTML('beforeend', proofCard);
+                        }
+                    }
+                }
+            }
+
+            if (!proofsFound) {
+                proofsGrid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500 text-lg">🎉 কোনো নতুন প্রুফ নেই।</div>';
+            }
+        };
+
         // Listen for data changes in Realtime Database
         onValue(ref(rtdb, 'users'), (snapshot) => {
-            const users = snapshot.val();
+            const users = snapshot.val() || {};
             renderUsers(users);
         });
 
         onValue(ref(rtdb, 'tasks'), (snapshot) => {
-            const tasks = snapshot.val();
+            const tasks = snapshot.val() || {};
             renderTasks(tasks);
+            renderProofs(tasks);
         });
 
         // Global functions for button actions
@@ -143,7 +305,6 @@
                 .catch(error => console.error('Error updating verification status:', error));
         };
 
-        // টাস্কটি স্থায়ীভাবে বন্ধ করার জন্য (কোনো রিফান্ড ছাড়াই)
         window.closeTask = (taskId) => {
             if (!window.confirm("আপনি কি নিশ্চিত এই কাজটিকে স্থায়ীভাবে বন্ধ করতে চান? এতে কোনো পয়েন্ট ফেরত দেওয়া হবে না।")) return;
             
@@ -153,23 +314,108 @@
                 .catch(error => console.error('Error closing task:', error));
         };
         
-        // Tab switching logic
-        const tabs = document.querySelectorAll('.tab');
-        const tabContents = document.querySelectorAll('.tab-content');
+        // প্রুফ অনুমোদন ফাংশন
+        window.approveProof = async (taskId, proofId, userId, pointsToAdd) => {
+            if (!window.confirm("আপনি কি নিশ্চিত এই প্রুফটি অনুমোদন করতে চান?")) return;
+            
+            const proofRef = ref(rtdb, `tasks/${taskId}/proofs/${proofId}`);
+            const userRef = ref(rtdb, `users/${userId}`);
+            const taskRef = ref(rtdb, `tasks/${taskId}`);
+            
+            try {
+                // Check if the proof is already processed
+                const snapshot = await get(proofRef);
+                const currentProof = snapshot.val();
+                if (!currentProof || currentProof.status !== 'pending') {
+                    alert('এই প্রুফটি ইতিমধ্যেই প্রক্রিয়া করা হয়েছে।');
+                    return;
+                }
 
+                // Update proof status
+                await update(proofRef, { status: 'approved' });
+                
+                // Get current user and task data
+                const userSnapshot = await get(userRef);
+                const userData = userSnapshot.val();
+                
+                const taskSnapshot = await get(taskRef);
+                const taskData = taskSnapshot.val();
+                
+                // Atomically update user points and tasks completed count
+                const newPoints = (userData.points || 0) + pointsToAdd;
+                const newTasksCompleted = (userData.tasksCompleted || 0) + 1;
+                const newCompletedCount = (taskData.completedCount || 0) + 1;
+                
+                await update(userRef, {
+                    points: newPoints,
+                    tasksCompleted: newTasksCompleted,
+                    [`completedTasks/${taskId}`]: 'approved'
+                });
+                
+                await update(taskRef, { completedCount: newCompletedCount });
+                
+                console.log('Proof approved and points awarded successfully.');
+                alert('প্রুফ সফলভাবে অনুমোদিত হয়েছে এবং পয়েন্ট দেওয়া হয়েছে!');
+            } catch (error) {
+                console.error("Error approving proof:", error);
+                alert(`প্রুফ অনুমোদন করতে ব্যর্থ: ${error.message}`);
+            }
+        };
+
+        // প্রুফ বাতিল ফাংশন
+        window.rejectProof = async (taskId, proofId, userId) => {
+            if (!window.confirm("আপনি কি নিশ্চিত এই প্রুফটি বাতিল করতে চান? ব্যবহারকারী আবার চেষ্টা করতে পারবে।")) return;
+            
+            const proofRef = ref(rtdb, `tasks/${taskId}/proofs/${proofId}`);
+            const userCompletedTaskRef = ref(rtdb, `users/${userId}/completedTasks/${taskId}`);
+            
+            try {
+                // Check if the proof is already processed
+                const snapshot = await get(proofRef);
+                const currentProof = snapshot.val();
+                if (!currentProof || currentProof.status !== 'pending') {
+                    alert('এই প্রুফটি ইতিমধ্যেই প্রক্রিয়া করা হয়েছে।');
+                    return;
+                }
+                
+                // Update proof status
+                await update(proofRef, { status: 'rejected' });
+                
+                // Update user's completed task status to 'rejected'
+                await update(userCompletedTaskRef, 'rejected');
+
+                // User's rejected tasks count update
+                const userRef = ref(rtdb, `users/${userId}`);
+                const userSnapshot = await get(userRef);
+                const userData = userSnapshot.val();
+                const newTasksRejected = (userData.tasksRejected || 0) + 1;
+                await update(userRef, { tasksRejected: newTasksRejected });
+
+                console.log('Proof rejected.');
+                alert('প্রুফ সফলভাবে বাতিল করা হয়েছে। ব্যবহারকারী আবার চেষ্টা করতে পারবে।');
+            } catch (error) {
+                console.error("Error rejecting proof:", error);
+                alert(`প্রুফ বাতিল করতে ব্যর্থ: ${error.message}`);
+            }
+        };
+
+        // Tab switching logic
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 // Deactivate all tabs and content
-                tabs.forEach(t => t.classList.remove('active'));
+                tabs.forEach(t => {
+                    t.classList.remove('bg-blue-600', 'text-white');
+                    t.classList.add('bg-gray-200', 'text-gray-700');
+                });
                 tabContents.forEach(tc => tc.classList.remove('active'));
 
                 // Activate the clicked tab and its content
                 const tabName = tab.dataset.tab;
                 document.getElementById(tabName).classList.add('active');
-                tab.classList.add('active');
+                tab.classList.remove('bg-gray-200', 'text-gray-700');
+                tab.classList.add('bg-blue-600', 'text-white');
             });
         });
     </script>
 </body>
 </html>
-
