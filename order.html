@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>নতুন অর্ডার তৈরি করুন</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* General Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .order-card, .history-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .order-card h2, .history-card h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .order-card p.points-display {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 9999px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-size: 1rem;
+            margin-top: 1rem;
+        }
+        /* Small button style for history actions */
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            margin-top: 0;
+        }
+
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: #e5e7eb;
+            color: #1f2937;
+        }
+
+        .total-cost {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #10b981;
+            margin-top: 1.5rem;
+            padding: 0.75rem;
+            background-color: #ecfdf5;
+            border-radius: 0.75rem;
+        }
+        
+        /* Order History Styles (Copied from xchange.html) */
+        .order-item {
+            background: #f9fafb; /* Lighter background for items */
+            padding: 1rem;
+            border-radius: 1rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid #3b82f6;
+            margin-bottom: 1rem;
+            text-align: left;
+            transition: all 0.2s ease;
+        }
+        
+        .order-item:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .task-type, .points-badge, .order-status {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+            white-space: nowrap;
+        }
+        
+        .task-type {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .points-badge {
+            background-color: #22c55e;
+            color: white;
+        }
+
+        .order-status {
+            background-color: #fcd34d;
+            color: #92400e;
+        }
+
+        .status-active {
+            background-color: #a7f3d0;
+            color: #065f46;
+        }
+        
+        .status-completed {
+            background-color: #d1d5db;
+            color: #4b5563;
+        }
+        
+        .status-rejected {
+            background-color: #fecaca;
+            color: #7f1d1d;
+        }
+
+        .order-body p {
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+            color: #4b5563;
+        }
+        
+        .order-actions {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Notification Styling */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            color: white;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .notification.info { background-color: #3b82f6; }
+        .notification.success { background-color: #10b981; }
+        .notification.error { background-color: #ef4444; }
+
+        /* Custom Confirmation Modal Style */
+        .custom-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+        .custom-modal-content {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .custom-modal-actions {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: space-around;
+        }
+        .custom-modal-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 9999px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+        .custom-modal-btn.confirm { background-color: #ef4444; color: white; }
+        .custom-modal-btn.cancel { background-color: #e5e7eb; color: #4b5563; }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="order-card">
+            <h2>নতুন কাজ তৈরি করুন</h2>
+            <p class="points-display">আপনার বর্তমান পয়েন্ট: <span id="current-points">০</span></p>
+
+            <form id="createOrderForm">
+                <div class="form-group">
+                    <label for="taskType">কাজের ধরণ:</label>
+                    <select id="taskType" name="taskType">
+                        <option value="like">ফেসবুক লাইক</option>
+                        <option value="comment">ফেসবুক কমেন্ট</option>
+                        <option value="share">ফেসবুক শেয়ার</option>
+                        <option value="follow">ফেসবুক ফলো</option>
+                        <option value="group">ফেসবুক গ্রুপ জয়েন</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="taskLink">ফেসবুক লিংক:</label>
+                    <input type="url" id="taskLink" name="taskLink" placeholder="পোস্ট/ভিডিও/পেজ এর লিংক" required>
+                </div>
+                <div class="form-group">
+                    <label for="taskPoints">পয়েন্ট (প্রতিটি কাজের জন্য):</label>
+                    <input type="number" id="taskPoints" name="taskPoints" min="1" max="50" value="5" required>
+                </div>
+                <div class="form-group">
+                    <label for="taskQuantity">পরিমাণ (কতগুলো লাগবে):</label>
+                    <input type="number" id="taskQuantity" name="taskQuantity" min="1" value="10" required>
+                </div>
+                
+                <div class="total-cost">
+                    মোট খরচ: <span id="total-cost-display">০</span> পয়েন্ট
+                </div>
+                
+                <button type="submit" class="btn btn-primary" id="submit-button">অর্ডার তৈরি করুন</button>
+            </form>
+
+            <div style="margin-top: 1.5rem;">
+                <a href="xchange.html" class="btn btn-secondary"><i class="fas fa-tachometer-alt"></i> ড্যাশবোর্ড</a>
+            </div>
+        </div>
+        
+        <div class="history-card">
+            <h2 style="margin-bottom: 1.5rem;">আপনার অর্ডারের হিস্টরি</h2>
+            <div id="myOrdersHistoryGrid">
+                <p style="text-align: center; color: #4b5563;">অর্ডার লোড হচ্ছে...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="confirmCancelModal" class="custom-modal">
+        <div class="custom-modal-content">
+            <p id="confirmMessage"></p>
+            <div class="custom-modal-actions">
+                <button class="custom-modal-btn confirm" id="confirmCancelButton">বাতিল করুন</button>
+                <button class="custom-modal-btn cancel" onclick="closeCustomModal()">ফিরে যান</button>
+            </div>
+        </div>
+    </div>
+    <div id="notification-container"></div>
+    
+    <script type="module">
+        import { auth, rtdb, showNotification, set, ref, onValue, push, remove, runTransaction, query, orderByChild, equalTo, get } from "./rtdb-config.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+
+        let userId = null;
+        let currentUserPoints = 0;
+        let userDataCache = {};
+        let currentCancellationDetails = {}; // For modal
+
+        const form = document.getElementById('createOrderForm');
+        const taskPointsInput = document.getElementById('taskPoints');
+        const taskQuantityInput = document.getElementById('taskQuantity');
+        const totalCostDisplay = document.getElementById('total-cost-display');
+        const currentPointsDisplay = document.getElementById('current-points');
+        const myOrdersHistoryGrid = document.getElementById('myOrdersHistoryGrid');
+        const confirmCancelModal = document.getElementById('confirmCancelModal');
+        const confirmMessage = document.getElementById('confirmMessage');
+        const confirmCancelButton = document.getElementById('confirmCancelButton');
+
+        // Modal functions
+        window.openCustomModal = (message, confirmAction) => {
+            confirmMessage.textContent = message;
+            confirmCancelButton.onclick = confirmAction;
+            confirmCancelModal.style.display = 'flex';
+        };
+
+        window.closeCustomModal = () => {
+            confirmCancelModal.style.display = 'none';
+        };
+
+        const updateCost = () => {
+            const points = parseInt(taskPointsInput.value, 10) || 0;
+            const quantity = parseInt(taskQuantityInput.value, 10) || 0;
+            const totalCost = points * quantity;
+            totalCostDisplay.textContent = totalCost.toLocaleString('bn-BD');
+            
+            if (totalCost > currentUserPoints) {
+                totalCostDisplay.style.color = '#ef4444';
+                document.getElementById('submit-button').disabled = true;
+            } else {
+                totalCostDisplay.style.color = '#10b981';
+                document.getElementById('submit-button').disabled = false;
+            }
+        };
+
+        const displayMyOrdersHistory = (orders) => {
+            myOrdersHistoryGrid.innerHTML = ''; 
+            if (orders.length === 0) {
+                myOrdersHistoryGrid.innerHTML = '<p style="text-align: center; color: #4b5563;">এখনও কোনো অর্ডার তৈরি করা হয়নি।</p>';
+                return;
+            }
+            
+            orders.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+            orders.forEach(order => {
+                const orderItem = document.createElement('div');
+                orderItem.className = 'order-item';
+                
+                const statusClass = order.status === 'active' ? 'status-active' : order.status === 'completed' ? 'status-completed' : 'status-rejected';
+                const statusText = order.status === 'active' ? 'সক্রিয়' : order.status === 'completed' ? 'সম্পূর্ণ' : 'বাতিল';
+                
+                // শুধুমাত্র pending proof-গুলো রিভিউয়ের জন্য দেখানো হবে
+                const proofsCount = order.proofs ? Object.values(order.proofs).filter(p => p.status === 'pending').length : 0;
+                
+                orderItem.innerHTML = `
+                    <div class="order-header">
+                        <span class="task-type">${order.taskType}</span>
+                        <span class="points-badge">${(order.pointsPerTask || 0).toLocaleString('bn-BD')} পয়েন্ট</span>
+                    </div>
+                    <div class="order-body">
+                        <p><strong>প্রয়োজন:</strong> ${(order.quantity || 0).toLocaleString('bn-BD')}</p>
+                        <p><strong>সম্পূর্ণ:</strong> ${(order.completedCount || 0).toLocaleString('bn-BD')}/${(order.quantity || 0).toLocaleString('bn-BD')}</p>
+                        <p><strong>মোট খরচ:</strong> ${(order.pointsPerTask * order.quantity).toLocaleString('bn-BD')} পয়েন্ট</p>
+                        <p><strong>লিংক:</strong> <a href="${order.taskLink}" target="_blank">${order.taskLink.substring(0, 30)}...</a></p>
+                    </div>
+                    <div class="order-actions">
+                        ${proofsCount > 0 ? `
+                            <a href="review_prof.html?taskId=${order.id}" class="btn btn-primary btn-sm">
+                                রিভিউ (${proofsCount})
+                            </a>
+                        ` : ''}
+                        ${order.status === 'active' ? 
+                            `<button class="btn btn-danger btn-sm" onclick="showCancelConfirmation('${order.id}', ${order.pointsPerTask}, ${order.quantity}, ${order.completedCount || 0})">বাতিল করুন</button>`
+                            : ''
+                        }
+                        <span class="order-status ${statusClass}" style="margin-left: auto; align-self: center;">${statusText}</span>
+                    </div>
+                `;
+                myOrdersHistoryGrid.appendChild(orderItem);
+            });
+        };
+
+        // window.confirm() এর পরিবর্তে এই ফাংশন ব্যবহার করা হয়েছে
+        window.showCancelConfirmation = (orderId, pointsPerTask, totalQuantity, completedCount) => {
+            currentCancellationDetails = { orderId, pointsPerTask, totalQuantity, completedCount };
+            const quantityRemaining = totalQuantity - completedCount;
+            const pointsToRefund = quantityRemaining * pointsPerTask;
+            const message = `আপনি কি নিশ্চিত এই অর্ডারটি বাতিল করতে চান? আপনি অবশিষ্ট ${quantityRemaining.toLocaleString('bn-BD')}টি কাজের জন্য মোট ${(pointsToRefund).toLocaleString('bn-BD')} পয়েন্ট ফেরত পাবেন।`;
+            
+            window.openCustomModal(message, () => handleCancelOrder());
+        };
+
+        const handleCancelOrder = async () => {
+            closeCustomModal(); // Modal বন্ধ করা
+            const { orderId, pointsPerTask, totalQuantity, completedCount } = currentCancellationDetails;
+
+            if (!userId) {
+                showNotification("আপনার ব্যবহারকারী আইডি পাওয়া যায়নি। পুনরায় লগইন করুন।", 'error');
+                return;
+            }
+
+            const orderRef = ref(rtdb, `tasks/${orderId}`);
+            const userRef = ref(rtdb, `users/${userId}`);
+
+            try {
+                // এখানে আর get() কল করার দরকার নেই, কারণ লজিকটা এখন runTransaction এর ভেতরে হ্যান্ডেল করা হবে
+                
+                let pointsToRefund = 0;
+                let finalQuantityRemaining = 0;
+
+                // ১. ব্যবহারকারীর পয়েন্ট আপডেট এবং অর্ডার বাতিল করা
+                await runTransaction(userRef, async (currentData) => {
+                    if (!currentData) return;
+                    
+                    // ২. অর্ডার ডেটা যাচাই করা এবং অবশিষ্ট পয়েন্ট গণনা করা
+                    const orderSnapshot = await get(orderRef);
+                    const orderData = orderSnapshot.val();
+
+                    if (!orderData || orderData.ownerId !== userId || orderData.status !== 'active') {
+                        // ট্রানজেকশন বাতিল করতে undefined রিটার্ন করা হলো
+                        showNotification("অর্ডারটি পাওয়া যায়নি বা বাতিল করার জন্য উপযুক্ত নয়।", 'error');
+                        return;
+                    }
+                    
+                    finalQuantityRemaining = orderData.quantity - (orderData.completedCount || 0);
+                    pointsToRefund = finalQuantityRemaining * orderData.pointsPerTask;
+
+                    if (pointsToRefund > 0) {
+                        currentData.points = (currentData.points || 0) + pointsToRefund;
+                    }
+                    currentData.tasksCreated = (currentData.tasksCreated || 0) - 1;
+                    
+                    // ৩. অর্ডারটি মুছে ফেলা (ট্রানজেকশনের বাইরে যাবে)
+                    // যেহেতু RTDB ট্রানজেকশন মাল্টি-পাথে কাজ করে না, তাই শুধু ইউজার ডেটা আপডেট করে বেরিয়ে আসব।
+                    // এর পর remove(orderRef) কল করা হবে।
+
+                    return currentData;
+                });
+                
+                // ৪. সফল ট্রানজেকশনের পর টাস্কটি ডেটাবেস থেকে মুছে ফেলা
+                await remove(orderRef); 
+                
+                showNotification(`অর্ডার সফলভাবে বাতিল করা হয়েছে এবং ${(pointsToRefund).toLocaleString('bn-BD')} পয়েন্ট ফেরত দেওয়া হয়েছে!`, 'success');
+            } catch (error) {
+                console.error("অর্ডার বাতিল করতে ব্যর্থ:", error);
+                showNotification(`অর্ডার বাতিল করতে সমস্যা: ${error.message || 'অজানা ত্রুটি'}`, 'error');
+            }
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                userId = user.uid;
+                
+                const userRef = ref(rtdb, `users/${userId}`);
+                onValue(userRef, (snapshot) => {
+                    const userData = snapshot.val();
+                    if (userData) {
+                        userDataCache = userData;
+                        currentUserPoints = userData.points || 0;
+                        currentPointsDisplay.textContent = currentUserPoints.toLocaleString('bn-BD');
+                        updateCost();
+                    } else {
+                        showNotification("ব্যবহারকারীর তথ্য পাওয়া যায়নি।", 'error');
+                    }
+                });
+
+                const tasksRef = ref(rtdb, 'tasks');
+                const myOrdersQuery = query(tasksRef, orderByChild('ownerId'), equalTo(userId));
+                
+                onValue(myOrdersQuery, (snapshot) => {
+                    const tasksData = snapshot.val();
+                    const orders = [];
+                    
+                    if (tasksData) {
+                        Object.keys(tasksData).forEach(key => {
+                            orders.push({ id: key, ...tasksData[key] });
+                        });
+                    }
+                    displayMyOrdersHistory(orders);
+                });
+
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        taskPointsInput.addEventListener('input', updateCost);
+        taskQuantityInput.addEventListener('input', updateCost);
+        
+        updateCost();
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!userId) {
+                showNotification('আপনি লগইন অবস্থায় নেই।', 'error');
+                return;
+            }
+
+            const taskType = document.getElementById('taskType').value;
+            const taskLink = document.getElementById('taskLink').value;
+            const taskPoints = parseInt(taskPointsInput.value, 10);
+            const taskQuantity = parseInt(taskQuantityInput.value, 10);
+            
+            const totalCost = taskPoints * taskQuantity;
+            
+            if (currentUserPoints < totalCost) {
+                showNotification('আপনার পর্যাপ্ত পয়েন্ট নেই।', 'error');
+                return;
+            }
+
+            // অর্ডার তৈরির জন্য কাস্টম কনফার্মেশন
+            const message = `আপনি কি নিশ্চিত ${(totalCost).toLocaleString('bn-BD')} পয়েন্টের বিনিময়ে এই অর্ডারটি তৈরি করতে চান?`;
+            
+            window.openCustomModal(message, async () => {
+                closeCustomModal(); // Modal বন্ধ করা
+
+                try {
+                    const userRef = ref(rtdb, `users/${userId}`);
+                    let transactionResult = null;
+                    
+                    // ১. ইউজার পয়েন্ট কেটে নেওয়া এবং টাস্ক কাউন্ট বাড়ানো
+                    transactionResult = await runTransaction(userRef, (currentData) => {
+                        if (currentData) {
+                            const currentPoints = currentData.points || 0;
+                            if (currentPoints < totalCost) {
+                                showNotification('আপনার পর্যাপ্ত পয়েন্ট নেই।', 'error');
+                                return; // Abort transaction if points are insufficient
+                            }
+                            currentData.points = currentPoints - totalCost;
+                            currentData.tasksCreated = (currentData.tasksCreated || 0) + 1;
+                        }
+                        return currentData;
+                    });
+
+                    if (!transactionResult || !transactionResult.committed) {
+                        // ট্রানজেকশন বাতিল হলে বা ব্যর্থ হলে
+                        return;
+                    }
+                    
+                    // ২. টাস্ক ডেটাবেসে কাজ তৈরি করা
+                    const tasksListRef = ref(rtdb, 'tasks');
+                    const newTaskRef = push(tasksListRef);
+                    const taskId = newTaskRef.key;
+
+                    const newTaskData = {
+                        id: taskId,
+                        ownerId: userId,
+                        taskType: taskType,
+                        taskLink: taskLink,
+                        pointsPerTask: taskPoints,
+                        quantity: taskQuantity,
+                        completedCount: 0, 
+                        proofs: {},
+                        status: 'active',
+                        createdAt: Date.now()
+                    };
+                    await set(newTaskRef, newTaskData);
+                    
+                    showNotification('কাজটি সফলভাবে তৈরি হয়েছে! আপনার হিস্টরিতে দেখুন।', 'success');
+                    form.reset();
+                    
+                } catch (error) {
+                    console.error("কাজ তৈরি করতে ব্যর্থ: ", error);
+                    showNotification(`কাজ তৈরি করতে সমস্যা হয়েছে: ${error.message || 'অজানা ত্রুটি'}`, 'error');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

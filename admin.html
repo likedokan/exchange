@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>এডমিন ড্যাশবোর্ড</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS কোড */
+        body { font-family: 'Inter', sans-serif; background: #f0f2f5; color: #333; padding: 2rem; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #1f2937; margin-bottom: 1.5rem; }
+        .tab-container { margin-top: 1.5rem; }
+        .tabs { display: flex; gap: 1rem; margin-bottom: 1rem; }
+        .tab { padding: 0.75rem 1.5rem; border: none; background: #e5e7eb; border-radius: 9999px; cursor: pointer; font-weight: 600; }
+        .tab.active { background: #3b82f6; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 12px; border: 1px solid #e5e7eb; text-align: left; }
+        th { background-color: #f3f4f6; font-weight: 700; }
+        .btn { padding: 0.5rem 1rem; border: none; border-radius: 9999px; cursor: pointer; font-weight: 600; font-size: 0.875rem; }
+        .btn-success { background-color: #22c55e; color: white; }
+        .btn-danger { background-color: #ef4444; color: white; }
+        .btn-primary { background-color: #3b82f6; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>এডমিন ড্যাশবোর্ড</h1>
+        
+        <div class="tabs">
+            <button class="tab active" data-tab="users">ব্যবহারকারী</button>
+            <button class="tab" data-tab="tasks">কাজসমূহ</button>
+        </div>
+
+        <div id="users" class="tab-content active">
+            <h2>ব্যবহারকারী ব্যবস্থাপনা</h2>
+            <table id="users-table">
+                <thead>
+                    <tr>
+                        <th>ইউজার ID</th>
+                        <th>নাম</th>
+                        <th>ইমেইল</th>
+                        <th>পয়েন্ট</th>
+                        <th>ভেরিফাইড</th>
+                        <th>অ্যাকশন</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+
+        <div id="tasks" class="tab-content">
+            <h2>কাজসমূহ ব্যবস্থাপনা</h2>
+            <table id="tasks-table">
+                <thead>
+                    <tr>
+                        <th>আইডি</th>
+                        <th>প্রকার</th>
+                        <th>লিংক</th>
+                        <th>পয়েন্ট</th>
+                        <th>অবস্থা</th>
+                        <th>অ্যাকশন</th>
+                    </tr>
+</thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { rtdb, ref, onValue, update } from './rtdb-config.js';
+
+        // Get references to the tables
+        const usersTableBody = document.querySelector('#users-table tbody');
+        const tasksTableBody = document.querySelector('#tasks-table tbody');
+
+        // Function to render users table
+        const renderUsers = (users) => {
+            usersTableBody.innerHTML = '';
+            for (const userId in users) {
+                const user = users[userId];
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${userId}</td>
+                    <td>${user.facebookName || 'N/A'}</td>
+                    <td>${user.email || 'N/A'}</td>
+                    <td>${(user.points || 0).toLocaleString('bn-BD')}</td>
+                    <td>${user.isVerified ? 'হ্যাঁ' : 'না'}</td>
+                    <td>
+                        <button class="btn btn-primary" onclick="toggleVerification('${userId}', ${user.isVerified})">
+                            ${user.isVerified ? 'ভেরিফিকেশন সরান' : 'ভেরিফাই করুন'}
+                        </button>
+                    </td>
+                `;
+                usersTableBody.appendChild(row);
+            }
+        };
+
+        // Function to render tasks table
+        const renderTasks = (tasks) => {
+            tasksTableBody.innerHTML = '';
+            // কাজগুলো নতুন থেকে পুরোনো ক্রমে সাজানো
+            const sortedTasks = Object.keys(tasks).map(key => ({ id: key, ...tasks[key] })).sort((a, b) => b.createdAt - a.createdAt);
+
+            sortedTasks.forEach((task) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${task.id}</td>
+                    <td>${task.taskType || 'N/A'}</td>
+                    <td><a href="${task.taskLink}" target="_blank">${task.taskLink ? task.taskLink.substring(0, 30) + '...' : 'N/A'}</a></td>
+                    <td>${(task.pointsPerTask || 0).toLocaleString('bn-BD')}</td>
+                    <td>${task.status || 'N/A'}</td>
+                    <td>
+                        ${task.status === 'active' ? 
+                            `<button class="btn btn-danger" onclick="closeTask('${task.id}')">বন্ধ করুন</button>`
+                        : `<span style="font-size: 0.8rem; color: #6b7280;">স্থায়ীভাবে বন্ধ</span>`}
+                    </td>
+                `;
+                tasksTableBody.appendChild(row);
+            });
+        };
+
+        // Listen for data changes in Realtime Database
+        onValue(ref(rtdb, 'users'), (snapshot) => {
+            const users = snapshot.val();
+            renderUsers(users);
+        });
+
+        onValue(ref(rtdb, 'tasks'), (snapshot) => {
+            const tasks = snapshot.val();
+            renderTasks(tasks);
+        });
+
+        // Global functions for button actions
+        window.toggleVerification = (userId, isVerified) => {
+            const userRef = ref(rtdb, `users/${userId}`);
+            update(userRef, { isVerified: !isVerified })
+                .then(() => console.log('User verification status updated'))
+                .catch(error => console.error('Error updating verification status:', error));
+        };
+
+        // টাস্কটি স্থায়ীভাবে বন্ধ করার জন্য (কোনো রিফান্ড ছাড়াই)
+        window.closeTask = (taskId) => {
+            if (!window.confirm("আপনি কি নিশ্চিত এই কাজটিকে স্থায়ীভাবে বন্ধ করতে চান? এতে কোনো পয়েন্ট ফেরত দেওয়া হবে না।")) return;
+            
+            const taskRef = ref(rtdb, `tasks/${taskId}`);
+            update(taskRef, { status: 'closed' })
+                .then(() => console.log('Task manually closed'))
+                .catch(error => console.error('Error closing task:', error));
+        };
+        
+        // Tab switching logic
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Deactivate all tabs and content
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(tc => tc.classList.remove('active'));
+
+                // Activate the clicked tab and its content
+                const tabName = tab.dataset.tab;
+                document.getElementById(tabName).classList.add('active');
+                tab.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
+

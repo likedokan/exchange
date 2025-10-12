@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>প্রুফ যাচাই করুন</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* General Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .main-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .proof-item {
+            background: #f9fafb;
+            padding: 1.25rem;
+            border-radius: 1rem;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .proof-item a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .proof-item a:hover {
+            text-decoration: underline;
+        }
+
+        .proof-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .proof-details p {
+            margin: 0;
+            font-size: 0.875rem;
+            color: #4b5563;
+        }
+
+        .proof-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.25rem;
+            border: none;
+            border-radius: 9999px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-size: 0.875rem;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-success {
+            background-color: #22c55e;
+            color: white;
+        }
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #e5e7eb;
+            color: #1f2937;
+        }
+        
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+            gap: 1rem;
+            color: #333;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #3b82f6;
+            animation: spin 1s ease infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Custom Confirmation Modal Style (Replaced window.confirm) */
+        .custom-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+        .custom-modal-content {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .custom-modal-actions {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: space-around;
+        }
+        .custom-modal-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 9999px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+        .custom-modal-btn.confirm { background-color: #22c55e; color: white; }
+        .custom-modal-btn.reject { background-color: #ef4444; color: white; }
+        .custom-modal-btn.cancel { background-color: #e5e7eb; color: #4b5563; }
+
+    </style>
+</head>
+<body>
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p>লোড হচ্ছে...</p>
+    </div>
+    <div class="container hidden" id="main-content">
+        <div class="main-card">
+            <h2>প্রুফ যাচাই করুন</h2>
+            <div id="proofs-list">
+                <!-- প্রুফগুলো এখানে লোড হবে -->
+            </div>
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <a href="xchange.html" class="btn btn-secondary">ড্যাশবোর্ডে ফিরে যান</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="proofActionModal" class="custom-modal">
+        <div class="custom-modal-content">
+            <p id="actionMessage" style="margin-bottom: 1rem; font-weight: 600; color: #1f2937;"></p>
+            <div class="proof-details-summary" id="modal-proof-summary" style="font-size: 0.9rem; margin-bottom: 1rem; color: #6b7280;"></div>
+            <div class="custom-modal-actions">
+                <button class="custom-modal-btn confirm" id="confirmActionButton">নিশ্চিত করুন</button>
+                <button class="custom-modal-btn cancel" onclick="closeCustomModal()">ফিরে যান</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification-container"></div>
+    
+    <script type="module">
+        import { auth, rtdb, showNotification, set, ref, onValue, runTransaction, get, remove } from "./rtdb-config.js";
+        import { onAuthStateChanged, setPersistence, browserSessionPersistence, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+        
+        const proofsListDiv = document.getElementById('proofs-list');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const mainContent = document.getElementById('main-content');
+        
+        const proofActionModal = document.getElementById('proofActionModal');
+        const actionMessage = document.getElementById('actionMessage');
+        const confirmActionButton = document.getElementById('confirmActionButton');
+        const modalProofSummary = document.getElementById('modal-proof-summary');
+        
+        let userId = null;
+        let currentActionDetails = {};
+
+        // Custom Modal functions
+        const openCustomModal = (message, action, proof) => {
+            currentActionDetails = proof; 
+            currentActionDetails.action = action;
+
+            actionMessage.textContent = message;
+            modalProofSummary.innerHTML = `ইউজার: ${proof.userName || proof.userId}`;
+            
+            confirmActionButton.textContent = action === 'approve' ? 'অনুমোদন দিন' : 'বাতিল করুন';
+            confirmActionButton.className = `custom-modal-btn ${action}`;
+            confirmActionButton.onclick = () => handleConfirmedAction();
+            
+            proofActionModal.style.display = 'flex';
+        };
+
+        window.closeCustomModal = () => {
+            proofActionModal.style.display = 'none';
+        };
+
+        const handleConfirmedAction = () => {
+            closeCustomModal();
+            handleProof(
+                currentActionDetails.action, 
+                currentActionDetails.taskId, 
+                currentActionDetails.id, 
+                currentActionDetails.userId, 
+                currentActionDetails.pointsPerTask
+            );
+        };
+        // End Custom Modal functions
+
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                loadAndListenForProofs(); 
+            } else {
+                try {
+                    // Firebase Auth ইনিশিয়ালাইজেশন লজিক
+                    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                    await setPersistence(auth, browserSessionPersistence);
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    console.error("Authentication failed:", error);
+                    showNotification("লগইন করতে ব্যর্থ, ড্যাশবোর্ডে ফেরত পাঠানো হচ্ছে।", 'error');
+                    setTimeout(() => { window.location.href = 'xchange.html'; }, 1500);
+                }
+            }
+        });
+
+        const loadAndListenForProofs = () => {
+            const params = new URLSearchParams(window.location.search);
+            const taskId = params.get('taskId');
+            
+            if (!taskId) {
+                showNotification("ত্রুটি: টাস্ক আইডি পাওয়া যায়নি!", 'error');
+                window.location.href = 'xchange.html';
+                return;
+            }
+
+            // সঠিক RTDB পাথ ব্যবহার করা হয়েছে
+            const taskRef = ref(rtdb, `tasks/${taskId}`);
+            
+            onValue(taskRef, (taskSnapshot) => {
+                const taskData = taskSnapshot.val();
+                
+                if (!taskData) {
+                    proofsListDiv.innerHTML = '<p style="text-align: center; color: #6b7280;">টাস্কটি আর বিদ্যমান নেই বা লোড হতে পারেনি।</p>';
+                    loadingOverlay.classList.add('hidden');
+                    mainContent.classList.remove('hidden');
+                    return;
+                }
+                
+                // শুধুমাত্র টাস্কের মালিকই রিভিউ করতে পারবে
+                if (taskData.ownerId !== userId) {
+                    showNotification("অনুমতি নেই! আপনি এই টাস্কের মালিক নন।", 'error');
+                    setTimeout(() => { window.location.href = 'xchange.html'; }, 1500);
+                    return;
+                }
+                
+                // টাস্কের ভেতরে থাকা proofs অবজেক্টটি লোড করা
+                const proofsObject = taskData.proofs || {};
+                displayProofs(proofsObject, taskData);
+                
+                loadingOverlay.classList.add('hidden');
+                mainContent.classList.remove('hidden');
+            });
+        };
+
+        const displayProofs = (proofsObject, taskData) => {
+            proofsListDiv.innerHTML = '';
+            // স্ট্যাটাস 'pending' আছে এমন প্রুফগুলো ফিল্টার করা
+            const proofsArray = Object.keys(proofsObject).map(key => ({ 
+                id: key, 
+                taskId: taskData.id,
+                pointsPerTask: taskData.pointsPerTask,
+                ...proofsObject[key] 
+            }));
+            
+            const pendingProofs = proofsArray.filter(proof => proof.status === 'pending');
+
+            if (pendingProofs.length === 0) {
+                proofsListDiv.innerHTML = '<p style="text-align: center; color: #6b7280;">এই কাজের জন্য কোনো নতুন প্রুফ জমা পড়েনি।</p>';
+                return;
+            }
+
+            pendingProofs.forEach(proof => {
+                const proofItem = document.createElement('div');
+                proofItem.className = 'proof-item';
+                
+                // userName প্রুফ ডেটার মধ্যে থাকলে সেটা ব্যবহার করা
+                const proofDetails = document.createElement('div');
+                proofDetails.className = 'proof-details';
+                proofDetails.innerHTML = `
+                    <p><strong>ব্যবহারকারী ID:</strong> ${proof.userId}</p>
+                    <p><strong>ব্যবহারকারী নাম:</strong> ${proof.userName || 'অজানা'}</p>
+                    <p><strong>প্রুফ লিংক:</strong> <a href="${proof.proofLink}" target="_blank">${proof.proofLink}</a></p>
+                `;
+                
+                const proofActions = document.createElement('div');
+                proofActions.className = 'proof-actions';
+                
+                const approveBtn = document.createElement('button');
+                approveBtn.className = 'btn btn-success';
+                approveBtn.textContent = 'অনুমোদন করুন';
+                // window.confirm() এর পরিবর্তে কাস্টম মডাল ব্যবহার
+                approveBtn.onclick = () => openCustomModal(
+                    `আপনি কি ${proof.userName || proof.userId} কে ${proof.pointsPerTask} পয়েন্ট দিতে চান?`,
+                    'approve',
+                    proof
+                );
+                
+                const rejectBtn = document.createElement('button');
+                rejectBtn.className = 'btn btn-danger';
+                rejectBtn.textContent = 'বাতিল করুন';
+                rejectBtn.onclick = () => openCustomModal(
+                    `আপনি কি নিশ্চিত ${proof.userName || proof.userId} এর প্রুফ বাতিল করবেন?`,
+                    'reject',
+                    proof
+                );
+                
+                proofActions.appendChild(approveBtn);
+                proofActions.appendChild(rejectBtn);
+                
+                proofItem.appendChild(proofDetails);
+                proofItem.appendChild(proofActions);
+                proofsListDiv.appendChild(proofItem);
+            });
+        };
+
+        window.handleProof = async (action, taskId, proofKey, proofUserId, pointsPerTask) => {
+            const proofRef = ref(rtdb, `tasks/${taskId}/proofs/${proofKey}`);
+            const userRef = ref(rtdb, `users/${proofUserId}`);
+            const taskRef = ref(rtdb, `tasks/${taskId}`);
+            const points = pointsPerTask || 0;
+            
+            try {
+                // ১. ইউজার প্রোফাইল আপডেট (পয়েন্ট এবং কাজের সংখ্যা)
+                await runTransaction(userRef, (currentData) => {
+                    if (currentData) {
+                        currentData.completedTasks = currentData.completedTasks || {};
+                        
+                        if (action === 'approve') {
+                            // যদি অনুমোদিত হয়: পয়েন্ট যোগ, সম্পন্ন কাজের সংখ্যা বাড়ানো
+                            currentData.points = (currentData.points || 0) + points;
+                            currentData.tasksCompleted = (currentData.tasksCompleted || 0) + 1;
+                            currentData.completedTasks[taskId] = 'approved';
+                        } else {
+                            // যদি বাতিল হয়: প্রত্যাখ্যাত কাজের সংখ্যা বাড়ানো
+                            currentData.tasksRejected = (currentData.tasksRejected || 0) + 1;
+                            // **সংশোধন:** প্রত্যাখ্যাত হলে এন্ট্রি মুছে ফেলা হলো যাতে ব্যবহারকারী আবার চেষ্টা করতে পারে।
+                            if (currentData.completedTasks && currentData.completedTasks[taskId]) {
+                                delete currentData.completedTasks[taskId]; 
+                            }
+                        }
+                    }
+                    return currentData;
+                });
+                
+                // ২. টাস্ক ডেটা আপডেট (completedCount বাড়ানো এবং স্ট্যাটাস পরিবর্তন)
+                if (action === 'approve') {
+                    await runTransaction(taskRef, (currentData) => {
+                        if (currentData) {
+                            currentData.completedCount = (currentData.completedCount || 0) + 1;
+                            // কাজের পরিমাণ পূরণ হলে স্ট্যাটাস 'completed' করা
+                            if (currentData.completedCount >= currentData.quantity) {
+                                currentData.status = 'completed';
+                            }
+                        }
+                        return currentData;
+                    });
+                }
+                
+                // ৩. প্রুফটি টাস্কের প্রমাণ তালিকা থেকে সরানো
+                await set(proofRef, null); // remove() এর পরিবর্তে set(ref, null) ব্যবহার করা হলো
+
+                if (action === 'approve') {
+                    showNotification("প্রুফ অনুমোদিত হয়েছে এবং ব্যবহারকারীকে পয়েন্ট দেওয়া হয়েছে!", 'success');
+                } else {
+                    showNotification("প্রুফ বাতিল করা হয়েছে। ব্যবহারকারী এখন কাজটি আবার করতে পারবে।", 'info');
+                }
+                
+            } catch (error) {
+                console.error("Error handling proof:", error);
+                showNotification("প্রুফ প্রক্রিয়াকরণে সমস্যা হয়েছে। বিস্তারিত কনসোলে দেখুন।", 'error');
+            }
+        };
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ফেসবুক এঙ্গেজমেন্ট এক্সচেঞ্জ</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"> </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ফন্ট ও ব্যাকগ্রাউন্ড কাস্টমাইজেশন */
+        body {
+    font-family: 'Hind Siliguri', Inter, sans-serif;
+    background-color: #f7f9fc;
+    min-height: 100vh;
+}
+
+        /* ব্র্যান্ডিং কালার - আধুনিক নীল */
+        .brand-blue {
+            background-color: #0d6efd; /* বুটস্ট্র্যাপ প্রাইমারি ব্লু এর কাছাকাছি */
+            transition: background-color 0.2s;
+        }
+
+        .brand-blue:hover {
+            background-color: #0b5ed7;
+        }
+
+        .brand-blue-text {
+            color: #0d6efd;
+        }
+
+        /* কার্ড স্টাইল - এলিভেটেড লুক */
+        .app-card {
+            background: white;
+            border-radius: 12px; /* একটু বেশি রাউন্ডেড */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* হালকা কিন্তু দৃশ্যমান শ্যাডো */
+            border: 1px solid #e9ecef;
+            transition: box-shadow 0.3s, transform 0.2s;
+        }
+
+        .app-card:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
+        }
+
+        /* ফিক্সড হেডার */
+        .fixed-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        /* কন্টেন্ট প্যাডিং */
+        .content-margin{
+            margin-top: 6rem;
+        }
+
+        /* ইনপুট স্টাইলিং */
+        .app-input {
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 16px;
+            background-color: white;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .app-input:focus {
+            outline: none;
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        /* লোডিং স্পিনার */
+        .spinner {
+            border-top-color: #0d6efd;
+            border-left-color: transparent;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- লোডিং ওভারলে -->
+    <div id="loading-overlay" class="fixed inset-0 flex flex-col justify-center items-center text-lg font-medium" style="background-color: rgba(255, 255, 255, 0.95); z-index: 9999;">
+        <div class="spinner animate-spin w-8 h-8 border-4 rounded-full border-gray-300"></div>
+        <p class="mt-4 text-gray-600">লোড হচ্ছে...</p>
+    </div>
+
+    <!-- হেডার -->
+    <header class="fixed-header">
+        <div class="container max-w-6xl mx-auto px-4 py-3 flex justify-between items-center h-16">
+            
+            <!-- লোগো এবং টাইটেল -->
+            <div class="text-xl font-extrabold brand-blue-text flex items-center">
+                <span class="mr-2 text-3xl">🔗</span> ENGAGEHUB
+            </div>
+            
+            <!-- পয়েন্ট ব্যাজ ও নেভিগেশন -->
+            <div class="flex items-center gap-0">
+                <div class="bg-gradient-to-r from-blue-300 to-blue-600 text-white font-bold px-3 py-0.5 rounded-full text-0.1 flex items-center shadow-md">
+                    <i class="fas fa-coins mr-2"></i>
+                    <span id="user-points">0</span>
+                </div>
+                
+                <!-- নেভিগেশন বাটন -->
+                <button class="w-10 h-10 rounded-full hover:bg-gray-100 transition duration-200 text-gray-600" title="প্রোফাইল" onclick="window.location.href='profile.html'">
+                    <i class="fas fa-user text-lg"></i>
+                </button>
+                <button class="w-10 h-10 rounded-full hover:bg-gray-100 transition duration-200 text-gray-600" title="লগআউট" onclick="window.logout()">
+                    <i class="fas fa-sign-out-alt text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- প্রধান কন্টেন্ট -->
+    <div class="container max-w-4xl mx-auto px-4 content-margin hidden" id="main-content-container">
+        
+        <main>
+            <!-- দ্রুত অ্যাকশন কার্ড (Quick Actions Card) -->
+            <div class="app-card p-6 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center border-b pb-4">
+                    ⚙️ দ্রুত অ্যাকশন
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <a href="order.html" class="block brand-blue text-center py-3 px-4 text-base font-bold rounded-xl text-white hover:shadow-xl hover:brightness-110 transform transition duration-300 shadow-md">
+                        <i class="fas fa-plus-circle mr-2"></i> নতুন অর্ডার তৈরি করুন
+                    </a>
+                    <button class="bg-gray-200 text-gray-800 py-3 px-4 text-base font-bold rounded-xl hover:bg-gray-300 hover:shadow-xl transform transition duration-300 shadow-md" onclick="scrollToTasks()">
+                        <i class="fas fa-trophy mr-2"></i> পয়েন্ট সংগ্রহ করুন
+                    </button>
+                </div>
+            </div>
+            
+            <!-- ব্যবহারকারীর প্রোফাইল ও ড্যাশবোর্ড -->
+            <div class="app-card p-6 mb-8" id="dashboard">
+                
+                <!-- প্রোফাইল সেকশন -->
+                <div class="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100">
+                    <div class="w-20 h-11 bg-gray-100 brand-blue-text rounded-full flex items-center justify-center text-3xl font-bold overflow-hidden border-2 border-gray-300" id="profile-avatar">
+                        S
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-800" id="user-name-display">ব্যবহারকারী</h3>
+                        <p class="text-gray-500 text-sm mt-1">
+                            ইউজার আইডি: <span id="user-id-display" class="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">user123</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- পরিসংখ্যান -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    
+                    <div class="stat-card p-4 text-center bg-yellow-50 rounded-lg shadow-sm">
+                        <i class="fas fa-star text-3xl text-yellow-500 mb-2"></i>
+                        <div class="text-2xl font-bold text-gray-800" id="total-points">০</div>
+                        <div class="text-sm text-gray-500">মোট পয়েন্ট</div>
+                    </div>
+                    
+                    <div class="stat-card p-4 text-center bg-blue-50 rounded-lg shadow-sm">
+                        <i class="fas fa-chart-line text-3xl brand-blue-text mb-2"></i>
+                        <div class="text-2xl font-bold text-gray-800" id="total-tasks-created">০</div>
+                        <div class="text-sm text-gray-500">তৈরিকৃত কাজ</div>
+                    </div>
+                    
+                    <div class="stat-card p-4 text-center bg-green-50 rounded-lg shadow-sm">
+                        <i class="fas fa-check-circle text-3xl text-green-500 mb-2"></i>
+                        <div class="text-2xl font-bold text-gray-800" id="total-tasks-completed">০</div>
+                        <div class="text-sm text-gray-500">সফল কাজ</div>
+                    </div>
+                    
+                    <div class="stat-card p-4 text-center bg-red-50 rounded-lg shadow-sm">
+                        <i class="fas fa-times-circle text-3xl text-red-500 mb-2"></i>
+                        <div class="text-2xl font-bold text-gray-800" id="total-tasks-rejected">০</div>
+                        <div class="text-sm text-gray-500">বাতিল কাজ</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- উপলব্ধ টাস্ক -->
+            <div class="app-card p-6 mb-8" id="available-tasks-section">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center border-b pb-4">
+                    🎯 উপলব্ধ টাস্ক সমূহ
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="available-tasks-grid">
+                    <!-- Tasks will be loaded here -->
+                </div>
+            </div>
+
+            <!-- সম্পন্নকৃত টাস্ক -->
+            <div class="app-card p-6 mb-8" id="completed-tasks-section">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center border-b pb-4">
+                    ✅ আপনার সম্পন্নকৃত টাস্ক
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="completed-tasks-grid">
+                    <!-- Completed tasks will be loaded here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- প্রুফ জমা দিন মডাল (পরিবর্তিত) -->
+    <div id="submit-proof-modal" class="fixed inset-0 z-50 flex justify-center items-center p-4 transition-opacity duration-300 hidden" style="background-color: rgba(0, 0, 0, 0.4);">
+        <div class="app-card p-6 w-full max-w-md relative animate-in zoom-in-50 duration-300">
+            <button class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-3xl transition" onclick="closeModal('submit-proof-modal')">
+                &times;
+            </button>
+            <h2 class="text-xl font-bold text-gray-800 mb-6 border-b pb-3">ফেসবুক আইডি জমা দিন</h2>
+            <form id="submitProofForm">
+                
+                <!-- ফেসবুক আইডির নাম -->
+                <div class="mb-4">
+                    <label for="facebookName" class="block text-sm font-medium text-gray-700 mb-2">
+                        আপনার ফেসবুক আইডির নাম:
+                    </label>
+                    <!-- autocomplete="off" যুক্ত করা হয়েছে যাতে ব্রাউজারের ডিফল্ট সাজেশন না আসে -->
+                    <!-- value স্বয়ংক্রিয়ভাবে জাভাস্ক্রিপ্ট দিয়ে সেট করা হবে -->
+                    <input type="text" id="facebookName" name="facebookName" 
+                           class="app-input w-full" 
+                           placeholder="যেমন: Shuvo Ahamed" required autocomplete="off">
+                    <p class="text-xs text-gray-500 mt-1">এই তথ্যটি শেষবার ব্যবহার করা হয়েছে এবং স্বয়ংক্রিয়ভাবে পূরণ করা হলো।</p>
+                </div>
+
+                <!-- ফেসবুক আইডির লিংক -->
+                <div class="mb-4">
+                    <label for="facebookLink" class="block text-sm font-medium text-gray-700 mb-2">
+                        আপনার ফেসবুক আইডির লিংক:
+                    </label>
+                    <input type="url" id="facebookLink" name="facebookLink" 
+                           class="app-input w-full" 
+                           placeholder="https://facebook.com/your.profile" required autocomplete="off">
+                    <p class="text-xs text-gray-500 mt-1">প্রোফাইল লিংকে কোনো স্পেস বা অতিরিক্ত টেক্সট দেবেন না।</p>
+                </div>
+                
+                <!-- প্রুফ লিংক ইনপুটটি সরিয়ে দেওয়া হয়েছে -->
+
+                <button type="submit" class="w-full brand-blue text-white py-3 text-center rounded-lg font-bold hover:shadow-lg transition duration-200">
+                    <i class="fas fa-upload mr-2"></i> জমা দিন
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <div id="notification-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+    
+    <script type="module">
+        // Firebase RTDB imports
+        // 'update' ফাংশনটি নতুন করে যুক্ত করা হলো
+        import { auth, rtdb, showNotification, logout } from './rtdb-config.js';
+        import { onAuthStateChanged, setPersistence, browserSessionPersistence, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+        import { set, ref, onValue, push, update } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+        
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const mainContentContainer = document.getElementById('main-content-container');
+        const availableTasksGrid = document.getElementById('available-tasks-grid');
+        const completedTasksGrid = document.getElementById('completed-tasks-grid');
+        const availableTasksSection = document.getElementById('available-tasks-section');
+        
+        const submitProofModal = document.getElementById('submit-proof-modal');
+        const submitProofForm = document.getElementById('submitProofForm');
+        
+        let currentTaskId = null;
+        let userId = null;
+        let currentUserPoints = 0;
+        let currentUserName = '';
+        let userCompletedTasks = {};
+        
+        // শেষবার জমা দেওয়া ফেসবুকের নাম ও লিংক সংরক্ষণ করার জন্য নতুন ভ্যারিয়েবল
+        let lastFacebookName = '';
+        let lastFacebookLink = '';
+        
+        let authAndDataLoaded = false;
+
+        const showContentAndHideLoader = () => {
+            if (!authAndDataLoaded) {
+                authAndDataLoaded = true;
+                loadingOverlay.classList.add('hidden');
+                mainContentContainer.classList.remove('hidden');
+            }
+        };
+
+        setTimeout(() => {
+            if (!authAndDataLoaded) {
+                console.warn("Loading timeout exceeded. Showing content anyway.");
+                showNotification('ডেটা লোড হতে বেশি সময় নিচ্ছে, দয়া করে অপেক্ষা করুন বা পরে আবার চেষ্টা করুন।', 'warning');
+                showContentAndHideLoader();
+            }
+        }, 5000); 
+
+        window.scrollToTasks = () => {
+            if (availableTasksSection) {
+                availableTasksSection.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+        };
+
+        const getStatusBadge = (status) => {
+            switch(status) {
+                case 'approved':
+                    return '<span class="px-3 py-1 text-sm font-medium rounded-full bg-green-100 text-green-700 flex items-center"><i class="fas fa-check-circle mr-1"></i> সফল</span>';
+                case 'rejected':
+                    return '<span class="px-3 py-1 text-sm font-medium rounded-full bg-red-100 text-red-700 flex items-center"><i class="fas fa-times-circle mr-1"></i> বাতিল</span>';
+                default:
+                    return '<span class="px-3 py-1 text-sm font-medium rounded-full bg-yellow-100 text-yellow-700 flex items-center"><i class="fas fa-hourglass-half mr-1"></i> রিভিউ চলছে</span>';
+            }
+        }
+        
+        const getTaskTypeBadge = (type) => {
+             // আধুনিক ব্যাজ স্টাইল
+            const baseClasses = "px-3 py-1 text-xs font-medium rounded-full capitalize shadow-sm";
+            let colorClasses;
+            switch(type.toLowerCase()) {
+                case 'like':
+                    colorClasses = "bg-blue-500 text-white";
+                    break;
+                case 'comment':
+                    colorClasses = "bg-purple-500 text-white";
+                    break;
+                case 'share':
+                    colorClasses = "bg-pink-500 text-white";
+                    break;
+                default:
+                    colorClasses = "bg-gray-200 text-gray-800";
+            }
+            return `<span class="${baseClasses} ${colorClasses}">${type}</span>`;
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                
+                const userRef = ref(rtdb, `users/${userId}`);
+                onValue(userRef, async (snapshot) => {
+                    const userData = snapshot.val() || {};
+
+                    if (snapshot.val() === null) {
+                        const initialUserData = {
+                            points: 0,
+                            facebookName: 'নতুন ব্যবহারকারী',
+                            tasksCreated: 0,
+                            tasksCompleted: 0,
+                            tasksRejected: 0,
+                            createdAt: Date.now(),
+                            // ইনিশিয়ালাইজেশনের সময় দুটি নতুন ফিল্ড যোগ করা হলো
+                            lastFacebookName: '',
+                            lastFacebookLink: ''
+                        };
+                        try {
+                            await set(userRef, initialUserData);
+                            return; 
+                        } catch (e) {
+                            console.error("User initialization failed:", e);
+                            showNotification('ব্যবহারকারী ডেটা তৈরি করতে সমস্যা হচ্ছে।', 'error');
+                        }
+                    }
+
+                    currentUserPoints = userData.points || 0; 
+                    currentUserName = userData.facebookName || 'ব্যবহারকারী';
+                    userCompletedTasks = userData.completedTasks || {};
+                    
+                    // শেষবার জমা দেওয়া ফেসবুকের নাম ও লিংক লোড করা হচ্ছে
+                    lastFacebookName = userData.lastFacebookName || '';
+                    lastFacebookLink = userData.lastFacebookLink || '';
+                    
+                    document.getElementById('user-points').textContent = ` ${currentUserPoints.toLocaleString('bn-BD')}`;
+                    document.getElementById('total-points').textContent = currentUserPoints.toLocaleString('bn-BD');
+                    document.getElementById('total-tasks-created').textContent = (userData.tasksCreated || 0).toLocaleString('bn-BD');
+                    document.getElementById('total-tasks-completed').textContent = (userData.tasksCompleted || 0).toLocaleString('bn-BD');
+                    document.getElementById('total-tasks-rejected').textContent = (userData.tasksRejected || 0).toLocaleString('bn-BD');
+                    document.getElementById('user-name-display').textContent = currentUserName;
+                    document.getElementById('user-id-display').textContent = user.uid;
+                    
+                    const profileAvatar = document.getElementById('profile-avatar');
+                    profileAvatar.innerHTML = '';
+                    if (userData.profilePhotoUrl) {
+                        const img = document.createElement('img');
+                        img.src = userData.profilePhotoUrl;
+                        img.alt = userData.facebookName || 'ব্যবহারকারী';
+                        img.className = 'w-full h-full object-cover rounded-full';
+                        profileAvatar.appendChild(img);
+                    } else if (userData.facebookName) {
+                        profileAvatar.textContent = userData.facebookName.charAt(0).toUpperCase();
+                    }
+                    
+                    listenForTasks(); 
+                    showContentAndHideLoader();
+                });
+                
+            } else {
+                try {
+                    await setPersistence(auth, browserSessionPersistence);
+                    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    console.error("Authentication failed:", error);
+                    showNotification('লগইন করতে সমস্যা হচ্ছে। পেজটি রিলোড করুন।', 'error');
+                    showContentAndHideLoader();
+                }
+            }
+        });
+
+        const listenForTasks = () => {
+            if (!userId) return;
+
+            const tasksRef = ref(rtdb, `tasks`);
+            
+            onValue(tasksRef, (snapshot) => {
+                const allTasks = snapshot.val() || {};
+                const availableTasks = [];
+                const completedTasks = [];
+                
+                for (const id in allTasks) {
+                    const task = allTasks[id];
+                    if (task && task.ownerId) { 
+                        const userStatus = userCompletedTasks[id];
+                        
+                        if (task.ownerId !== userId) {
+                            if (userStatus) {
+                                // Find the specific status from proofs if available, otherwise use the stored user status
+                                let statusToDisplay = userStatus;
+                                if(task.proofs) {
+                                    const latestProof = Object.values(task.proofs).find(p => p.userId === userId);
+                                    if(latestProof) {
+                                        statusToDisplay = latestProof.status;
+                                    }
+                                }
+
+                                const completedTaskData = { 
+                                    id: id, 
+                                    status: statusToDisplay, 
+                                    ...task 
+                                };
+                                completedTasks.push(completedTaskData);
+
+                            } else if (task.status === 'active' && (task.completedCount || 0) < task.quantity) {
+                                availableTasks.push({ id: id, ...task });
+                            }
+                        }
+                    }
+                }
+
+                availableTasks.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)); 
+                completedTasks.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)); 
+                
+                displayAvailableTasks(availableTasks);
+                displayCompletedTasks(completedTasks);
+            });
+        };
+
+        const displayAvailableTasks = (tasks) => {
+            availableTasksGrid.innerHTML = '';
+            if (tasks.length === 0) {
+                availableTasksGrid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500 text-lg">✨ এখন কোনো উপলব্ধ কাজ নেই। নতুন কাজের জন্য অপেক্ষা করুন।</div>';
+                return;
+            }
+
+            tasks.forEach(task => {
+                const completedCount = task.completedCount || 0; 
+                
+                const taskCard = `
+                    <div class="app-card p-5">
+                        <div class="flex justify-between items-start mb-4">
+                            ${getTaskTypeBadge(task.taskType)}
+                            <div class="bg-gradient-to-r from-green-400 to-green-600 text-white font-bold px-3 py-1 rounded-full text-sm shadow-md">
+                                + ${(task.pointsPerTask).toLocaleString('bn-BD')} পয়েন্ট
+                            </div>
+                        </div>
+                        <h4 class="text-xl font-semibold text-gray-800 mb-4">${task.taskType} প্রয়োজন</h4>
+                        <div class="space-y-2 text-sm text-gray-600 mb-6">
+                            <p class="flex justify-between items-center">
+                                <span><i class="fas fa-bullseye text-blue-500 mr-2"></i> মোট লক্ষ্য:</span> 
+                                <span class="font-bold text-base">${task.quantity.toLocaleString('bn-BD')} টি</span>
+                            </p>
+                            <p class="flex justify-between items-center">
+                                <span><i class="fas fa-check-double text-green-500 mr-2"></i> সম্পন্ন হয়েছে:</span> 
+                                <span class="font-bold text-base text-green-600">${completedCount.toLocaleString('bn-BD')} টি</span>
+                            </p>
+                            <div class="pt-3 border-t border-gray-100">
+                                <span class="block mb-1 text-gray-500 font-medium text-xs">টাস্ক লিংক:</span> 
+                                <a href="${task.taskLink}" target="_blank" class="brand-blue-text hover:underline text-sm break-all font-mono">${task.taskLink}</a>
+                            </div>
+                        </div>
+                        <button class="w-full brand-blue text-white py-2.5 px-4 text-base font-bold rounded-lg hover:brightness-110 shadow-md" onclick="openSubmitProofModal('${task.id}')">
+                            <i class="fas fa-hand-pointer mr-2"></i> কাজটি করুন
+                        </button>
+                    </div>
+                `;
+                availableTasksGrid.insertAdjacentHTML('beforeend', taskCard);
+            });
+        };
+
+        const displayCompletedTasks = (tasks) => {
+            completedTasksGrid.innerHTML = '';
+            if (tasks.length === 0) {
+                completedTasksGrid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500 text-lg">আপনি এখনো কোনো কাজ জমা দেননি।</div>';
+                return;
+            }
+
+            tasks.forEach(task => {
+                const statusBadge = getStatusBadge(task.status);
+                const canRetry = task.status === 'rejected';
+                
+                const taskCard = `
+                    <div class="app-card p-5">
+                        <div class="flex justify-between items-center mb-4">
+                            ${getTaskTypeBadge(task.taskType)}
+                            ${statusBadge}
+                        </div>
+                        <h4 class="text-xl font-semibold text-gray-800 mb-4">${task.taskType} টাস্ক</h4>
+                        <div class="space-y-2 text-sm text-gray-600 mb-6">
+                            <p class="flex justify-between items-center">
+                                <span><i class="fas fa-award text-yellow-500 mr-2"></i> ${task.status === 'approved' ? 'অর্জিত' : 'প্রত্যাশিত'} পয়েন্ট:</span> 
+                                <span class="font-bold text-base text-green-600">${(task.pointsPerTask).toLocaleString('bn-BD')}</span>
+                            </p>
+                            <div class="pt-3 border-t border-gray-100">
+                                <span class="block mb-1 text-gray-500 font-medium text-xs">টাস্ক লিংক:</span> 
+                                <a href="${task.taskLink}" target="_blank" class="brand-blue-text hover:underline text-sm break-all font-mono">${task.taskLink}</a>
+                            </div>
+                        </div>
+                        ${canRetry ? `
+                            <button class="w-full bg-red-500 hover:bg-red-600 text-white py-2.5 px-4 text-base font-bold rounded-lg shadow-md" onclick="openSubmitProofModal('${task.id}')">
+                                <i class="fas fa-redo-alt mr-2"></i> আবার চেষ্টা করুন
+                            </button>
+                        ` : `<div class="text-sm text-gray-500 text-center py-2">${task.status === 'approved' ? 'সফলভাবে সম্পন্ন হয়েছে।' : 'আপনার সাবমিশন রিভিউ করা হচ্ছে...'}</div>`}
+                    </div>
+                `;
+                completedTasksGrid.insertAdjacentHTML('beforeend', taskCard);
+            });
+        };
+
+        window.openSubmitProofModal = (taskId) => {
+            currentTaskId = taskId;
+            
+            // শেষবার জমা দেওয়া ডেটা দিয়ে ইনপুট ফিল্ডগুলো স্বয়ংক্রিয়ভাবে পূরণ করা হচ্ছে
+            document.getElementById('facebookName').value = lastFacebookName;
+            document.getElementById('facebookLink').value = lastFacebookLink;
+            
+            submitProofModal.classList.remove('hidden');
+        };
+
+        submitProofForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            // শুধুমাত্র ফেসবুক আইডির নাম ও লিংকের ভ্যালু নেওয়া হচ্ছে
+            const facebookName = document.getElementById('facebookName').value.trim();
+            const facebookLink = document.getElementById('facebookLink').value.trim();
+            
+            // সব ফিল্ড পূরণ হয়েছে কিনা তা যাচাই করা
+            if (!facebookName || !facebookLink) {
+                showNotification('ফেসবুক আইডির নাম এবং লিংক অবশ্যই পূরণ করতে হবে।', 'error');
+                return;
+            }
+
+            if (!currentTaskId || !userId) {
+                showNotification('ত্রুটি: কাজ বা ব্যবহারকারীর আইডি পাওয়া যায়নি।', 'error');
+                return;
+            }
+            
+            const proofRef = ref(rtdb, `tasks/${currentTaskId}/proofs`);
+            
+            // proofData তে শুধু ফেসবুক আইডির নাম ও লিংক রাখা হলো
+            const proofData = {
+                userId: userId,
+                userName: currentUserName,
+                facebookName: facebookName, 
+                facebookLink: facebookLink,
+                submittedAt: Date.now(), 
+                status: 'pending' 
+            };
+
+            try {
+                // Remove existing 'rejected' or 'pending' status from user's completed tasks before submitting a new proof
+                const userCompletedTaskRef = ref(rtdb, `users/${userId}/completedTasks/${currentTaskId}`);
+                await set(userCompletedTaskRef, 'pending');
+                
+                await push(proofRef, proofData);
+
+                // *** নতুন সংযোজন: ব্যবহারকারীর প্রোফাইলে শেষ জমা দেওয়া ডেটা সংরক্ষণ করা ***
+                const userUpdateRef = ref(rtdb, `users/${userId}`);
+                await update(userUpdateRef, {
+                    lastFacebookName: facebookName,
+                    lastFacebookLink: facebookLink,
+                });
+                // *******************************************************************
+
+                showNotification('প্রুফ সফলভাবে জমা দেওয়া হয়েছে! এডমিন রিভিউ করবে।', 'success');
+                submitProofForm.reset();
+                closeModal('submit-proof-modal');
+
+            } catch (error) {
+                console.error("Proof submission failed:", error);
+                showNotification(`প্রুফ জমা দিতে ব্যর্থ: ${error.message}`, 'error');
+            }
+        });
+
+        window.logout = logout;
+        window.closeModal = (modalId) => {
+            document.getElementById(modalId).classList.add('hidden');
+        };
+
+        window.onclick = function(event) {
+            if (event.target === submitProofModal) {
+                submitProofModal.classList.add('hidden');
+            }
+        };
+    </script>
+</body>
+</html>
+

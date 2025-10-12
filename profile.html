@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>আমার প্রোফাইল</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* General Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+        
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+            gap: 1rem;
+            color: #333;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #3b82f6;
+            animation: spin 1s ease infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .btn {
+            padding: 0.75rem 1.25rem;
+            border: none;
+            border-radius: 9999px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-size: 0.875rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        /* Notifications */
+        .notification {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+            transition: all 0.3s ease-in-out;
+            transform: translateX(120%);
+            opacity: 0;
+            font-size: 0.875rem;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .notification.success {
+            background-color: #10b981;
+        }
+
+        .notification.error {
+            background-color: #ef4444;
+        }
+
+        /* Pop-up styles (Modal) */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.3s;
+            padding: 1rem;
+        }
+
+        .popup-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .popup-content {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transform: scale(0.95);
+            transition: transform 0.3s;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .popup-overlay.active .popup-content {
+            transform: scale(1);
+        }
+
+        .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #9ca3af;
+        }
+
+        .popup-content h2 {
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            color: #1f2937;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #4b5563;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .add-link-button {
+            background: none;
+            border: 1px solid #d1d5db;
+            color: #4b5563;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+
+        .add-link-button:hover {
+            background-color: #f3f4f6;
+        }
+
+        .save-button {
+            width: 100%;
+            background-color: #2563eb;
+            color: #ffffff;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            margin-top: 1rem;
+        }
+
+        .verify-button {
+            width: 100%;
+            background-color: #10b981;
+            color: #ffffff;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            margin-top: 1rem;
+        }
+
+        /* Profile Card Styling */
+        .profile-card {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 24rem;
+        }
+        .profile-header {
+            text-align: center;
+        }
+        .profile-avatar {
+            position: relative;
+            display: inline-block;
+        }
+        .avatar-circle {
+            width: 8rem;
+            height: 8rem;
+            border-radius: 9999px;
+            background-color: #3b82f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 3.5rem;
+            font-weight: bold;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .profile-avatar img {
+            width: 8rem;
+            height: 8rem;
+            border-radius: 9999px;
+            object-fit: cover;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .verified-badge {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background-color: #1d9bf0;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            border: 2px solid white;
+        }
+        .user-details {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        .user-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+        .user-email {
+            font-size: 1rem;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+        }
+        .user-id {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            word-break: break-all;
+        }
+        .stats-grid {
+            margin-top: 2rem;
+            display: grid;
+            gap: 1rem;
+            text-align: center;
+        }
+        .stats-grid .row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+        }
+        .stats-grid .full-width {
+            grid-column: span 1;
+        }
+        .stat-item {
+            color: #ffffff;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+        .stat-item p {
+            margin: 0;
+        }
+        .stat-item p:first-child {
+            font-size: 2.25rem;
+            font-weight: bold;
+        }
+        .stat-item p:last-child {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            margin-top: 0.25rem;
+        }
+        .social-media-links {
+            margin-top: 2rem;
+        }
+        .social-media-links h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 1rem;
+        }
+        .social-media-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .social-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            background-color: #f9fafb;
+            color: #1f2937;
+            text-decoration: none;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .social-link:hover {
+            background-color: #ececec;
+        }
+        .social-icon {
+            font-size: 1.5rem;
+            width: 1.5rem;
+            height: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #4a4a4a;
+        }
+        .social-link-facebook .social-icon {
+            color: #1877F2;
+        }
+        .action-button-container {
+            margin-top: 2rem;
+            text-align: center;
+        }
+        .action-button {
+            background-color: #2563eb;
+            color: #ffffff;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        /* --- Custom CSS for Rating --- */
+        .rating-container {
+            margin-top: 2rem;
+            text-align: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .rating-container h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.75rem;
+        }
+        .stars {
+            font-size: 2rem;
+            color: #d1d5db; /* Default color (unfilled) */
+            margin-bottom: 0.5rem;
+        }
+        .stars .filled {
+            color: #f59e0b; /* Filled star color (amber) */
+        }
+        /* ----------------------------- */
+    </style>
+</head>
+
+<body>
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p>লোড হচ্ছে...</p>
+    </div>
+
+    <div class="profile-card hidden" id="profile-container">
+        <div class="profile-header">
+            <div class="profile-avatar" id="profile-avatar-container">
+                <span class="verified-badge" id="verifiedBadge" style="display: none;">
+                    ✓
+                </span>
+            </div>
+            <div class="user-details">
+                <h1 class="user-name" id="userName"></h1>
+                <p class="user-email" id="userEmailDisplay"></p>
+                <p class="user-id" id="userIdDisplay"></p>
+            </div>
+        </div>
+        
+        <div class="rating-container">
+            <h2>রেটিংস</h2>
+            <div class="stars" id="userRatingStars">
+                <!-- Stars will be inserted here dynamically -->
+            </div>
+            <p style="font-size: 1.5rem; font-weight: bold; color: #3b82f6;"><span id="userPoints">0</span> পয়েন্ট</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-item full-width" style="background-image: linear-gradient(to right, #6366f1, #818cf8);">
+                <p id="totalWorks">০</p>
+                <p>মোট কাজ</p>
+            </div>
+            <div class="row">
+                <div class="stat-item" style="background-image: linear-gradient(to right, #ef4444, #f87171);">
+                    <p id="failedWorks">০</p>
+                    <p>ভূল কাজ</p>
+                </div>
+                <div class="stat-item" style="background-image: linear-gradient(to right, #22c55e, #4ade80);">
+                    <p id="successfulWorks">০</p>
+                    <p>সফল কাজ</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="social-media-links">
+            <h2>সামাজিক মাধ্যম</h2>
+            <ul class="social-media-list" id="socialLinksList">
+                </ul>
+            <div class="social-link social-link-email">
+                <i class="fas fa-envelope social-icon"></i>
+                <span id="userEmail"></span>
+            </div>
+        </div>
+        
+        <div class="action-button-container">
+            <button class="action-button" onclick="showEditProfilePopup()">
+                প্রোফাইল এডিট করুন
+            </button>
+        </div>
+        <div class="action-button-container">
+            <a href="xchange.html" class="btn action-button" style="background-color: #6b7280;">ড্যাশবোর্ডে ফিরে যান</a>
+        </div>
+    </div>
+    
+    <div id="editProfilePopup" class="popup-overlay">
+        <div class="popup-content">
+            <span class="close-button" onclick="closePopup()">&times;</span>
+            <h2>প্রোফাইল এডিট করুন</h2>
+            <form id="editProfileForm">
+                <div class="form-group">
+                    <label for="profilePhoto">প্রোফাইল ফটো আপলোড করুন</label>
+                    <input type="file" id="profilePhoto" name="profilePhoto" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label for="facebookName">ফেসবুক আইডির পুরো নাম</label>
+                    <input type="text" id="facebookName" name="facebookName" placeholder="আপনার ফেসবুকের পুরো নাম" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">ইমেইল ঠিকানা</label>
+                    <input type="email" id="userEmailInput" name="userEmail" placeholder="আপনার ইমেইল" readonly>
+                </div>
+                
+                <div class="form-group" id="facebookLinksContainer">
+                    <label>ফেসবুক আইডির লিংক (গুলো)</label>
+                    </div>
+                
+                <button type="button" class="add-link-button" id="addLinkButton">আরো লিংক যুক্ত করুন</button>
+
+                <button type="submit" class="save-button">সেভ করুন</button>
+            </form>
+            <!-- স্ব-ভেরিফিকেশন বাটনটি সরিয়ে দেওয়া হয়েছে -->
+        </div>
+    </div>
+    <div id="notification-container"></div>
+    
+
+<script type="module">
+    import { auth, rtdb, showNotification, set, ref, update, onValue, get } from "./rtdb-config.js";
+    import { onAuthStateChanged, setPersistence, browserSessionPersistence, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+    
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const profileContainer = document.getElementById('profile-container');
+    
+    let userId;
+
+    window.closePopup = () => {
+        document.getElementById('editProfilePopup').classList.remove('active');
+    };
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            try {
+                // Firebase-এর কাস্টম টোকেন ব্যবহার করে বা বেনামে লগইন করুন
+                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                await setPersistence(auth, browserSessionPersistence);
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Authentication failed:", error);
+                window.location.href = 'xchange.html';
+                return;
+            }
+            return;
+        }
+
+        userId = user.uid;
+        document.getElementById('userIdDisplay').textContent = `ইউজার আইডি: ${userId}`;
+        document.getElementById('userEmailInput').value = user.email || 'ইমেইল নেই';
+        
+        const userProfileRef = ref(rtdb, `users/${userId}`);
+
+        // রিয়েলটাইম ডেটাবেস থেকে ডেটা লোড করুন এবং প্রোফাইল UI আপডেট করুন
+        onValue(userProfileRef, (snapshot) => {
+            const data = snapshot.val();
+            
+            if (data) {
+                updateProfileUI(data);
+            } else {
+                // যদি প্রোফাইল ডেটা না থাকে, তাহলে ডিফল্ট ডেটা সেট করুন
+                const defaultData = {
+                    facebookName: 'ব্যবহারকারী',
+                    email: user.email || 'ইমেইল নেই',
+                    facebookLinks: ['#'],
+                    isVerified: false,
+                    tasksCreated: 0,
+                    tasksCompleted: 0,
+                    tasksRejected: 0,
+                    points: 0,
+                    profilePhotoUrl: ''
+                };
+                set(userProfileRef, defaultData)
+                    .then(() => console.log("Default profile created in RTDB."))
+                    .catch((error) => console.error("Error creating default profile in RTDB:", error));
+            }
+            loadingOverlay.classList.add('hidden');
+            profileContainer.classList.remove('hidden');
+        });
+    });
+
+    function updateProfileUI(data) {
+        const profileAvatarContainer = document.getElementById('profile-avatar-container');
+        profileAvatarContainer.innerHTML = '';
+        
+        // প্রোফাইল ফটো বা ডিফল্ট আভাটার দেখান
+        const avatarElement = document.createElement(data.profilePhotoUrl ? 'img' : 'div');
+        if (data.profilePhotoUrl) {
+            avatarElement.src = data.profilePhotoUrl;
+            avatarElement.alt = data.facebookName;
+            avatarElement.className = 'profile-avatar';
+        } else {
+            avatarElement.className = 'avatar-circle';
+            avatarElement.textContent = (data.facebookName ? data.facebookName.charAt(0) : 'A').toUpperCase();
+        }
+        profileAvatarContainer.appendChild(avatarElement);
+
+        const verifiedBadge = document.getElementById('verifiedBadge');
+        // BUG FIX: Checking if verifiedBadge exists before accessing its properties.
+        if (verifiedBadge) {
+            if (data.isVerified) {
+                verifiedBadge.style.display = 'flex';
+            } else {
+                verifiedBadge.style.display = 'none';
+            }
+        }
+        
+        document.getElementById('userName').textContent = data.facebookName || 'নাম নেই';
+        document.getElementById('userEmailDisplay').textContent = data.email || 'ইমেইল নেই';
+        document.getElementById('userEmail').textContent = data.email;
+        document.getElementById('userPoints').textContent = (data.points || 0).toLocaleString('bn-BD');
+        
+        const totalCompleted = data.tasksCompleted || 0;
+        const totalRejected = data.tasksRejected || 0;
+        
+        document.getElementById('totalWorks').textContent = (totalCompleted + totalRejected).toLocaleString('bn-BD');
+        document.getElementById('failedWorks').textContent = totalRejected.toLocaleString('bn-BD');
+        document.getElementById('successfulWorks').textContent = totalCompleted.toLocaleString('bn-BD');
+
+        // --- রেটিং গণনা এবং প্রদর্শন (Rating Calculation and Display) ---
+        const totalWorks = totalCompleted + totalRejected;
+        let starRating = 3; // ডিফল্ট রেটিং ৩ স্টার
+
+        if (totalWorks > 0) {
+            const successRate = totalCompleted / totalWorks;
+
+            if (successRate > 0.8) {
+                starRating = 5;
+            } else if (successRate > 0.6) {
+                starRating = 4;
+            } else if (successRate > 0.4) {
+                starRating = 3;
+            } else if (successRate > 0.2) {
+                starRating = 2;
+            } else {
+                starRating = 1;
+            }
+        }
+        
+        const starsContainer = document.getElementById('userRatingStars');
+        if (starsContainer) {
+            let starsHtml = '';
+            for (let i = 1; i <= 5; i++) {
+                const isFilled = i <= starRating;
+                const starClass = isFilled ? 'filled' : '';
+                // ইউজারদের পারফরম্যান্সের ভিত্তিতে স্টার রেটিং দেখানো হচ্ছে
+                starsHtml += `<span class="${starClass}">★</span>`;
+            }
+            starsContainer.innerHTML = starsHtml;
+        }
+        // --- রেটিং গণনা শেষ ---
+
+        const socialLinksList = document.getElementById('socialLinksList');
+        socialLinksList.innerHTML = '';
+        const links = Array.isArray(data.facebookLinks) ? data.facebookLinks : Object.values(data.facebookLinks || {});
+
+        if (links.length > 0 && links[0] !== '#') {
+            links.forEach(link => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <a href="${link}" class="social-link social-link-facebook" target="_blank">
+                        <i class="fab fa-facebook social-icon"></i>
+                        <span>Facebook Profile Link</span>
+                    </a>
+                `;
+                socialLinksList.appendChild(li);
+            });
+        }
+    }
+
+    window.showEditProfilePopup = async () => {
+        if (!userId) return;
+
+        const userProfileRef = ref(rtdb, `users/${userId}`);
+        const snapshot = await get(userProfileRef);
+        const data = snapshot.val();
+        
+        if (data) {
+            document.getElementById('facebookName').value = data.facebookName || '';
+            document.getElementById('userEmailInput').value = data.email || '';
+            
+            const linksContainer = document.getElementById('facebookLinksContainer');
+            linksContainer.innerHTML = '<label>ফেসবুক আইডির লিংক (গুলো)</label>';
+            
+            const currentLinks = Array.isArray(data.facebookLinks) 
+                                ? data.facebookLinks 
+                                : Object.values(data.facebookLinks || {});
+
+            if (currentLinks.length > 0 && currentLinks[0] !== '#') {
+                currentLinks.forEach(link => {
+                    if (link && link.trim() !== '') {
+                         addLinkInput(linksContainer, link);
+                    }
+                });
+            } else {
+                addLinkInput(linksContainer, '');
+            }
+        }
+        document.getElementById('editProfilePopup').classList.add('active');
+    };
+    
+    function addLinkInput(container, value = '') {
+        const input = document.createElement('input');
+        input.type = 'url';
+        input.name = 'facebookLink';
+        input.value = value;
+        input.placeholder = 'আপনার ফেসবুক প্রোফাইল লিংক';
+        container.appendChild(input);
+    }
+    
+    document.getElementById('addLinkButton').addEventListener('click', function() {
+        const linksContainer = document.getElementById('facebookLinksContainer');
+        addLinkInput(linksContainer, '');
+    });
+
+
+    document.getElementById('editProfileForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const newFacebookLinks = Array.from(document.querySelectorAll('#facebookLinksContainer input[name="facebookLink"]'))
+                                .map(input => input.value)
+                                .filter(link => link.trim() !== '');
+
+        const profilePhotoFile = document.getElementById('profilePhoto').files[0];
+        let profilePhotoUrl = '';
+
+        if (profilePhotoFile) {
+            try {
+                // Warning: This stores base64 image data in Realtime Database, which has a 16MB limit per node. 
+                // For a production app, use Firebase Storage for images and store the URL here.
+                const reader = new FileReader();
+                reader.readAsDataURL(profilePhotoFile);
+                profilePhotoUrl = await new Promise((resolve, reject) => {
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                });
+            } catch (error) {
+                console.error("Error reading file:", error);
+                showNotification("ছবি আপলোড ব্যর্থ হয়েছে।", 'error');
+                return;
+            }
+        }
+        
+        const newData = {
+            facebookName: document.getElementById('facebookName').value,
+            facebookLinks: newFacebookLinks.length > 0 ? newFacebookLinks : ['#']
+        };
+
+        if (profilePhotoUrl) {
+            newData.profilePhotoUrl = profilePhotoUrl;
+        }
+        
+        const userProfileRef = ref(rtdb, `users/${userId}`);
+        try {
+             await update(userProfileRef, newData); 
+             showNotification("প্রোফাইল সফলভাবে আপডেট করা হয়েছে!", 'success');
+        } catch (error) {
+             console.error("Error updating profile in RTDB:", error);
+             showNotification("প্রোফাইল আপডেট ব্যর্থ হয়েছে।", 'error');
+        }
+        
+        closePopup();
+    });
+</script>
+
+</body>
+</html>
+

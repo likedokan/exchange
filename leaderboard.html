@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>লিডারবোর্ড</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .leaderboard-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        .leaderboard-card h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+        }
+        .leaderboard-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            margin-bottom: 0.75rem;
+            background-color: #f9fafb;
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+        }
+        .leaderboard-item:hover {
+            background-color: #f3f4f6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        .leaderboard-item.first {
+            background-color: #ffda79;
+            box-shadow: 0 4px 15px rgba(255, 218, 121, 0.5);
+        }
+        .leaderboard-item.second {
+            background-color: #c9d6df;
+        }
+        .leaderboard-item.third {
+            background-color: #e5b6a7;
+        }
+        .leaderboard-rank {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #4b5563;
+        }
+        .leaderboard-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+            flex-grow: 1;
+            text-align: left;
+            margin-left: 1rem;
+        }
+        .leaderboard-points {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #22c55e;
+        }
+        .back-button-container {
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+        .back-button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 9999px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            background-color: #3b82f6;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .back-button:hover {
+            background-color: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="leaderboard-card">
+            <h2>🥇 লিডারবোর্ড 🥈</h2>
+            <ul class="leaderboard-list" id="leaderboard-list">
+                </ul>
+            <div class="back-button-container">
+                <a href="xchange.html" class="back-button">ড্যাশবোর্ডে ফিরে যান</a>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { rtdb, ref, onValue, query, orderByChild, limitToLast } from "./rtdb-config.js";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const leaderboardList = document.getElementById('leaderboard-list');
+            
+            const usersRef = ref(rtdb, "users");
+            const topUsersQuery = query(usersRef, orderByChild("points"), limitToLast(10));
+
+            onValue(topUsersQuery, (snapshot) => {
+                const usersData = snapshot.val();
+                leaderboardList.innerHTML = '';
+                
+                if (!usersData) {
+                    leaderboardList.innerHTML = '<p style="text-align: center; color: #6b7280;">কোনো ব্যবহারকারী পাওয়া যায়নি।</p>';
+                    return;
+                }
+
+                let sortedUsers = Object.keys(usersData).map(key => usersData[key]);
+                
+                sortedUsers.sort((a, b) => (b.points || 0) - (a.points || 0));
+
+                let rank = 1;
+                
+                const topTenUsers = sortedUsers.slice(0, 10);
+
+                topTenUsers.forEach((user) => {
+                    const listItem = document.createElement('li');
+                    
+                    let rankClass = '';
+                    if (rank === 1) rankClass = 'first';
+                    else if (rank === 2) rankClass = 'second';
+                    else if (rank === 3) rankClass = 'third';
+
+                    listItem.className = `leaderboard-item ${rankClass}`;
+                    listItem.innerHTML = `
+                        <span class="leaderboard-rank">${rank}</span>
+                        <span class="leaderboard-name">${user.facebookName || 'ব্যবহারকারী'}</span>
+                        <span class="leaderboard-points">${(user.points || 0).toLocaleString('bn-BD')} পয়েন্ট</span>
+                    `;
+                    leaderboardList.appendChild(listItem);
+                    rank++;
+                });
+            });
+        });
+    </script>
+</body>
+</html>
