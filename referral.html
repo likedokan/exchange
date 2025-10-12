@@ -4,142 +4,112 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>রেফারেল সিস্টেম</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"> </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
-        /* CSS কোড (xchange.html এর অনুরূপ) */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        /* ফন্ট ও ব্যাকগ্রাউন্ড কাস্টমাইজেশন */
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
+            font-family: 'Hind Siliguri', Inter, sans-serif;
+            background-color: #f7f9fc;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem 1rem;
         }
 
-        .container {
-            max-width: 600px;
-            width: 100%;
-            margin: 0 auto;
+        /* ব্র্যান্ডিং কালার - আধুনিক নীল */
+        .brand-blue {
+            background-color: #0d6efd;
+            transition: background-color 0.2s;
+        }
+        
+        .brand-blue:hover {
+            background-color: #0b5ed7;
         }
 
-        .card {
+        .brand-blue-text {
+            color: #0d6efd;
+        }
+
+        /* কার্ড স্টাইল - এলিভেটেড লুক */
+        .app-card {
             background: white;
-            padding: 2rem;
-            border-radius: 1.5rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            text-align: center;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e9ecef;
+            transition: box-shadow 0.3s, transform 0.2s;
         }
 
-        h2 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 1.5rem;
+        .app-card:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
         }
 
-        .btn {
-            padding: 0.75rem 1.25rem;
-            border: none;
-            border-radius: 9999px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            font-size: 0.875rem;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .btn-primary {
-            background-color: #3b82f6;
-            color: white;
-        }
-
-        .btn-secondary {
-            background-color: #e5e7eb;
-            color: #1f2937;
-        }
-
+        /* কোড ডিসপ্লে স্টাইল */
         .code-display {
             background-color: #f3f4f6;
             padding: 1rem;
-            border-radius: 0.75rem;
+            border-radius: 8px;
             margin-bottom: 1.5rem;
             font-size: 1.25rem;
             font-weight: 600;
             color: #1f2937;
             word-break: break-all;
-        }
-
-        /* Notifications */
-        .notification {
-            position: fixed;
-            bottom: 1rem;
-            right: 1rem;
-            padding: 0.75rem 1rem;
-            border-radius: 0.75rem;
-            color: white;
-            font-weight: 600;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            z-index: 1001;
-            transition: all 0.3s ease-in-out;
-            transform: translateX(120%);
-            opacity: 0;
-            font-size: 0.875rem;
-        }
-        
-        .notification.show {
-            transform: translateX(0);
-            opacity: 1;
-        }
-
-        .notification.success {
-            background-color: #10b981;
-        }
-
-        .notification.error {
-            background-color: #ef4444;
+            position: relative;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="card">
-            <h2>বন্ধুদের আমন্ত্রণ জানান</h2>
-            <p>আপনার রেফারেল কোড শেয়ার করুন এবং পয়েন্ট অর্জন করুন।</p>
-            <div class="code-display" id="referral-code">লোড হচ্ছে...</div>
-            <button class="btn btn-primary" onclick="copyCode()">কোড কপি করুন</button>
-            <div style="margin-top: 2rem;">
-                <a href="xchange.html" class="btn btn-secondary">ড্যাশবোর্ডে ফিরে যান</a>
+<body class="p-4 flex flex-col items-center justify-center">
+
+    <div class="container max-w-xl w-full">
+        
+        <header class="app-card p-6 text-center mb-6 md:mb-8">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800 flex items-center justify-center gap-4">
+                <i class="fas fa-handshake text-yellow-500 text-3xl md:text-4xl"></i>
+                বন্ধুদের আমন্ত্রণ জানান
+            </h1>
+            <p class="text-gray-500 font-semibold mt-2">আপনার রেফারেল কোড শেয়ার করে পয়েন্ট অর্জন করুন!</p>
+        </header>
+
+        <main class="app-card p-4 md:p-6 text-center">
+            <h2 class="text-2xl font-bold text-gray-700 mb-6">আপনার রেফারেল কোড</h2>
+            <div class="code-display font-mono">
+                <p id="referral-code">লোড হচ্ছে...</p>
+                <button class="bg-gray-200 text-gray-700 rounded-full py-2 px-4 text-sm font-semibold hover:bg-gray-300 transition-all duration-200 mt-4" onclick="copyCode()">
+                    <i class="fas fa-copy mr-2"></i> কোড কপি করুন
+                </button>
             </div>
+            
+            <div class="bg-green-50 text-green-700 p-4 rounded-lg border border-green-200 text-left mt-6">
+                <h3 class="font-bold mb-1">কীভাবে এটি কাজ করে?</h3>
+                <ul class="list-disc list-inside space-y-1 text-sm">
+                    <li>আপনার বন্ধু আপনার কোড ব্যবহার করে সাইনআপ করলে আপনারা উভয়েই বোনাস পয়েন্ট পাবেন।</li>
+                    <li>প্রতিটি সফল রেফারেলের জন্য আপনি **২৫** পয়েন্ট পাবেন।</li>
+                </ul>
+            </div>
+        </main>
+
+        <div class="mt-8 text-center">
+            <a href="index.html" class="inline-flex items-center bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
+                <i class="fas fa-arrow-left mr-2"></i>
+                ড্যাশবোর্ডে ফিরে যান
+            </a>
         </div>
     </div>
-    <div id="notification-container"></div>
+    
+    <div id="notification-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
 
     <script type="module">
         import { auth, rtdb, showNotification, ref, onValue } from "./rtdb-config.js";
-        import { onAuthStateChanged, setPersistence, browserSessionPersistence, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
         
         let userId = null;
 
         window.showNotification = showNotification;
 
-        onAuthStateChanged(auth, async (user) => {
+        onAuthStateChanged(auth, (user) => {
             if (user) {
                 userId = user.uid;
                 
@@ -155,19 +125,7 @@
                 }, { onlyOnce: true });
 
             } else {
-                try {
-                    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                    await setPersistence(auth, browserSessionPersistence);
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                } catch (error) {
-                    console.error("Authentication failed:", error);
-                    showNotification("লগইন প্রয়োজন, আপনাকে লগইন পেজে পাঠানো হচ্ছে।", 'error');
-                    window.location.href = 'login.html';
-                }
+                window.location.href = 'login.html';
             }
         });
 
