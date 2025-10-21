@@ -190,22 +190,31 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
+        /* ----- ভেরিফাইড ব্যাজ স্টাইল (পরিবর্তিত) ----- */
         .verified-badge {
             position: absolute;
             bottom: 0.5rem;
             right: 0.5rem;
-            background-color: #1d9bf0;
-            color: white;
+            background-color: #1877F2; /* ফেসবুক ব্লু */
+            color: white; /* সাদা চেক-মার্ক */
             border-radius: 50%;
             width: 24px;
             height: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            /* চেক-মার্ক আইকনের আকারের জন্য ফন্ট সাইজ */
+            font-size: 14px; 
             font-weight: bold;
-            border: 2px solid white;
+            border: 2px solid white; /* নীল ব্যাজটিকে ঘিরে একটি সাদা স্ট্রোক */
         }
+        
+        /* নিশ্চিত করুন যে ফন্ট-অসাম আইকনটি সঠিকভাবে সেন্টারে প্রদর্শিত হয় */
+        .verified-badge .fa-check { 
+            line-height: 1;
+        }
+        /* ----- ভেরিফাইড ব্যাজ স্টাইল শেষ ----- */
+
 
         .stats-grid {
             display: grid;
@@ -356,6 +365,7 @@
     
 
 <script type="module">
+    // NOTE: This setup assumes 'rtdb-config.js' contains the necessary Firebase Realtime Database and Auth setup exports.
     import { auth, rtdb, showNotification, set, ref, update, onValue, get } from "./rtdb-config.js";
     import { onAuthStateChanged, setPersistence, browserSessionPersistence, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
     
@@ -428,6 +438,9 @@
 
         if (profilePhotoFile) {
             try {
+                // Warning: In a real app, large images should be uploaded to Firebase Storage
+                // and the URL saved to the Realtime Database. Base64 encoding is used here
+                // for simplicity in a single-file environment, but is inefficient for large files.
                 const reader = new FileReader();
                 reader.readAsDataURL(profilePhotoFile);
                 profilePhotoUrl = await new Promise((resolve, reject) => {
@@ -443,6 +456,7 @@
         
         const newData = {
             facebookName: document.getElementById('facebookName').value,
+            // স্ট্রিং বা অ্যারে ছাড়া অন্য ডেটা RTDB-তে সেভ করলে তা Object হিসেবে সেভ হয়।
             facebookLinks: newFacebookLinks.length > 0 ? newFacebookLinks : ['#']
         };
 
@@ -462,9 +476,10 @@
         closePopup();
     });
 
+    // Firebase Auth State Listener
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
-            window.location.href = 'login.html';
+            window.location.href = 'login.html'; // যদি ইউজার লগইন না করে, তবে লগইন পেজে পাঠান
             return;
         }
 
@@ -474,14 +489,16 @@
         
         const userProfileRef = ref(rtdb, `users/${userId}`);
         
+        // Realtime listener for user profile data
         onValue(userProfileRef, (snapshot) => {
             const data = snapshot.val();
             
             if (data) {
                 updateProfileUI(data);
             } else {
+                // Create default profile if it doesn't exist
                 const defaultData = {
-                    facebookName: 'ব্যবহারকারী',
+                    facebookName: user.email ? user.email.split('@')[0] : 'ব্যবহারকারী',
                     email: user.email || 'ইমেইল নেই',
                     facebookLinks: ['#'],
                     isVerified: false,
@@ -500,10 +517,12 @@
         });
     });
     
+    // Function to update the profile display elements
     function updateProfileUI(data) {
         const profileAvatarContainer = document.getElementById('profile-avatar-container');
         profileAvatarContainer.innerHTML = '';
         
+        // Avatar setup
         const avatarElement = document.createElement(data.profilePhotoUrl ? 'img' : 'div');
         if (data.profilePhotoUrl) {
             avatarElement.src = data.profilePhotoUrl;
@@ -515,13 +534,19 @@
         }
         profileAvatarContainer.appendChild(avatarElement);
 
+        // Verified Badge setup (Icon changed to look like Facebook)
         const verifiedBadge = document.createElement('span');
         verifiedBadge.className = 'verified-badge';
-        verifiedBadge.textContent = '✓';
+        
+        // ফেসবুকের মতো দেখতে করার জন্য: নীল ব্যাকগ্রাউন্ডের মধ্যে সাদা '✓' চিহ্ন ব্যবহার করা হয়েছে।
+        // এর জন্য fa-check আইকনটি ব্যবহার করা হয়েছে।
+        verifiedBadge.innerHTML = '<i class="fa fa-check" aria-hidden="true"></i>'; 
+
         if (data.isVerified) {
             profileAvatarContainer.appendChild(verifiedBadge);
         }
         
+        // Update Stats
         document.getElementById('userName').textContent = data.facebookName || 'নাম নেই';
         document.getElementById('userPoints').textContent = (data.points || 0).toLocaleString('bn-BD');
         
@@ -533,3 +558,4 @@
 
 </body>
 </html>
+

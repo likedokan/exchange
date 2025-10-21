@@ -81,19 +81,55 @@
             box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
         }
 
-        /* লোডিং স্পিনার */
+        /* লোডিং স্পিনার ও ওভারলে স্টাইল (পরিবর্তিত) */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+            gap: 1rem;
+            color: #333;
+            font-size: 1.25rem;
+            font-weight: 600;
+            opacity: 1; /* ডিফল্টরূপে দৃশ্যমান */
+            pointer-events: all; /* ইন্টারঅ্যাকশন ব্লক করা */
+            transition: opacity 0.5s ease-out; /* মসৃণ ট্রানজিশন যোগ করা হলো */
+        }
+        
+        /* ওভারলে অদৃশ্য করার জন্য নতুন ক্লাস */
+        #loading-overlay.fade-out {
+            opacity: 0;
+            pointer-events: none; /* অদৃশ্য হওয়ার পর ইন্টারঅ্যাকশন চালু করা */
+        }
+
         .spinner {
+            border: 4px solid #e5e7eb;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
             border-top-color: #0d6efd;
-            border-left-color: transparent;
+            animation: spin 1s ease infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
     
     <!-- লোডিং ওভারলে -->
-    <div id="loading-overlay" class="fixed inset-0 flex flex-col justify-center items-center text-lg font-medium" style="background-color: rgba(255, 255, 255, 0.95); z-index: 9999;">
-        <div class="spinner animate-spin w-8 h-8 border-4 rounded-full border-gray-300"></div>
-        <p class="mt-4 text-gray-600">লোড হচ্ছে...</p>
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p>লোড হচ্ছে...</p>
     </div>
 
     <!-- হেডার -->
@@ -132,13 +168,24 @@
                 <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center border-b pb-4">
                     ⚙️ দ্রুত অ্যাকশন
                 </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <a href="order.html" class="block brand-blue text-center py-3 px-4 text-base font-bold rounded-xl text-white hover:shadow-xl hover:brightness-110 transform transition duration-300 shadow-md">
-                        <i class="fas fa-plus-circle mr-2"></i> নতুন অর্ডার তৈরি করুন
+                <!-- নতুন: গ্রিড ২x২ (মোবাইল) এবং ৪x১ (ডেস্কটপ) -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <a href="order.html" class="block brand-blue text-center py-3 px-2 text-xs md:text-sm font-bold rounded-xl text-white hover:shadow-xl hover:brightness-110 transform transition duration-300 shadow-md">
+                        <i class="fas fa-plus-circle block md:hidden mb-1"></i> 
+                        <span class="hidden md:inline"><i class="fas fa-plus-circle mr-1"></i></span> নতুন অর্ডার
                     </a>
-                    <button class="bg-gray-200 text-gray-800 py-3 px-4 text-base font-bold rounded-xl hover:bg-gray-300 hover:shadow-xl transform transition duration-300 shadow-md" onclick="scrollToTasks()">
-                        <i class="fas fa-trophy mr-2"></i> পয়েন্ট সংগ্রহ করুন
-                    </button>
+                    <a href="profile.html" class="block bg-gray-500 text-center py-3 px-2 text-xs md:text-sm font-bold rounded-xl text-white hover:bg-gray-600 hover:shadow-xl transform transition duration-300 shadow-md">
+                         <i class="fas fa-user block md:hidden mb-1"></i>
+                         <span class="hidden md:inline"><i class="fas fa-user mr-1"></i></span> আমার প্রোফাইল
+                    </a>
+                    <a href="leaderboard.html" class="block bg-yellow-500 text-center py-3 px-2 text-xs md:text-sm font-bold rounded-xl text-white hover:bg-yellow-600 hover:shadow-xl transform transition duration-300 shadow-md">
+                         <i class="fas fa-crown block md:hidden mb-1"></i>
+                         <span class="hidden md:inline"><i class="fas fa-crown mr-1"></i></span> লিডারবোর্ড
+                    </a>
+                    <a href="referral.html" class="block bg-purple-500 text-center py-3 px-2 text-xs md:text-sm font-bold rounded-xl text-white hover:bg-purple-600 hover:shadow-xl transform transition duration-300 shadow-md">
+                         <i class="fas fa-handshake block md:hidden mb-1"></i>
+                         <span class="hidden md:inline"><i class="fas fa-handshake mr-1"></i></span> রেফারেল
+                    </a>
                 </div>
             </div>
             
@@ -284,7 +331,8 @@
         const showContentAndHideLoader = () => {
             if (!authAndDataLoaded) {
                 authAndDataLoaded = true;
-                loadingOverlay.classList.add('hidden');
+                // 'hidden' ক্লাসের পরিবর্তে 'fade-out' ক্লাস ব্যবহার করা হলো
+                loadingOverlay.classList.add('fade-out');
                 mainContentContainer.classList.remove('hidden');
             }
         };
