@@ -117,6 +117,48 @@
         .verified-badge .fa-check { 
             line-height: 1;
         }
+        
+        /* কাস্টম মডাল স্টাইল */
+        .custom-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            transition: opacity 0.3s ease;
+        }
+        
+        .custom-modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 450px; /* মডালের সাইজ একটু বাড়ানো হলো */
+            text-align: center;
+            animation: zoomIn 0.3s ease-out;
+        }
+        
+        .custom-modal-actions {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: space-around;
+            gap: 1rem;
+        }
+        
+        .custom-modal-btn {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 9999px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
     </style>
 </head>
 <body class="p-4 flex flex-col items-center justify-center">
@@ -149,87 +191,223 @@
         </div>
     </div>
     
+    <!-- কাস্টম কনফার্মেশন মডাল -->
+    <div id="moderator-modal" class="custom-modal">
+        <div class="custom-modal-content">
+            <h3 class="text-xl font-bold mb-2 text-gray-800" id="modal-title">নিশ্চিত করুন</h3>
+            <p class="text-gray-600 mb-4" id="modal-message"></p>
+            
+            <!-- 🔥 নতুন: বাতিলের কারণ ইনপুট (ডিফল্টরূপে লুকানো) -->
+            <div id="rejection-reason-group" class="mb-4 hidden text-left">
+                <label for="rejection-reason" class="block text-sm font-medium text-gray-700 mb-2">বাতিলের কারণ (আবশ্যক):</label>
+                <textarea id="rejection-reason" rows="3" class="w-full p-3 border border-red-300 rounded-lg focus:ring-red-500 focus:border-red-500" placeholder="কেন প্রুফটি বাতিল করা হচ্ছে তার বিস্তারিত লিখুন..."></textarea>
+            </div>
+            
+            <div class="custom-modal-actions">
+                <button class="custom-modal-btn bg-green-500 text-white hover:bg-green-600" id="modal-confirm-btn">
+                    নিশ্চিত করুন
+                </button>
+                <button class="custom-modal-btn bg-gray-200 text-gray-800 hover:bg-gray-300" onclick="closeModeratorModal()">
+                    বাতিল
+                </button>
+            </div>
+        </div>
+    </div>
+    
     <div id="notification-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
     
     <script type="module">
         // Firebase imports from rtdb-config.js
-        import { auth, rtdb, showNotification, ref, onValue, update, get, runTransaction } from './rtdb-config.js';
+        import { auth, rtdb, showNotification, ref, onValue, update, get, runTransaction } from './rtdb-config.js'; 
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+        
+        // 🔥 নতুন কনস্ট্যান্ট: সাসপেনশন শর্তাবলী
+        const REJECT_trust_CHANGE = -10;
+        const GENERIC_WARNING = "আপনি সঠিকভাবে কাজ করুন না হলে আপনার একাউন্ট বন্ধ করে দেওয়া হতে পারে।";
+        
+        // স্কোর বেশি থেকে কম অনুযায়ী সাজানো হয়েছে, যাতে প্রথম হিটটিই সর্বোচ্চ সাসপেনশন সময় দেয়।
+        const SUSPENSION_RULES = [
+            { score: 40, durationMs: 24 * 60 * 60 * 1000, durationText: "২৪ ঘন্টা" },
+            { score: 50, durationMs: 3 * 60 * 60 * 1000, durationText: "৩ ঘন্টা" },
+            { score: 60, durationMs: 60 * 60 * 1000, durationText: "১ ঘন্টা" },
+            { score: 70, durationMs: 30 * 60 * 1000, durationText: "৩০ মিনিট" }
+        ];
+
         
         const proofsGrid = document.getElementById('proofs-grid');
         const loadingIndicator = document.getElementById('loading-indicator');
         
-        let currentUserId = null;
+        const moderatorModal = document.getElementById('moderator-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+        
+        // 🔥 নতুন DOM রেফারেন্স
+        const rejectionReasonGroup = document.getElementById('rejection-reason-group');
+        const rejectionReasonInput = document.getElementById('rejection-reason');
 
-        // AUTH CHECK - Ensures user is logged in
+        let currentUserId = null;
+        let pendingAction = { actionType: null, data: null };
+        let allUsersData = {}; 
+        
+        // Modal functions
+        window.closeModeratorModal = () => {
+            moderatorModal.style.display = 'none';
+            pendingAction = { actionType: null, data: null }; // রিসেট
+            rejectionReasonInput.value = ''; // 🔥 নতুন: ইনপুট ক্লিয়ার করা
+        };
+        
+        const openModeratorModal = (type, data) => {
+            pendingAction.actionType = type;
+            pendingAction.data = data;
+            
+            let titleText = 'নিশ্চিত করুন';
+            let messageText = '';
+            let confirmClass = '';
+            
+            if (type === 'approveProof') {
+                titleText = 'অনুমোদন দিন';
+                messageText = `আপনি কি নিশ্চিত প্রুফটি অনুমোদন করে ইউজারকে ${(data.points).toLocaleString('bn-BD')} পয়েন্ট দিতে চান?`;
+                confirmClass = 'bg-green-500 hover:bg-green-600';
+                rejectionReasonGroup.classList.add('hidden'); // 🔥 নতুন: অনুমোদনের জন্য লুকানো
+                modalConfirmBtn.classList.remove('bg-red-500'); // ক্লাস ঠিক করা
+                modalConfirmBtn.classList.add('bg-green-500');
+            } else if (type === 'rejectProof') {
+                titleText = 'বাতিল করুন';
+                messageText = `আপনি কি নিশ্চিত প্রুফটি বাতিল করবেন? ইউজার আবার চেষ্টা করতে পারবে। বাতিলের কারণ উল্লেখ করুন।`;
+                confirmClass = 'bg-red-500 hover:bg-red-600';
+                rejectionReasonGroup.classList.remove('hidden'); // 🔥 নতুন: বাতিলের জন্য দেখানো
+                rejectionReasonInput.value = ''; // ইনপুট ক্লিয়ার করা
+                modalConfirmBtn.classList.remove('bg-green-500'); // ক্লাস ঠিক করা
+                modalConfirmBtn.classList.add('bg-red-500');
+            }
+
+            modalTitle.textContent = titleText;
+            modalMessage.textContent = messageText;
+            modalConfirmBtn.className = `custom-modal-btn text-white font-bold ${confirmClass}`;
+            moderatorModal.style.display = 'flex';
+        };
+
+        // মডাল কনফার্ম বাটনে ক্লিক ইভেন্ট হ্যান্ডলার
+        modalConfirmBtn.onclick = () => {
+            const { actionType, data } = pendingAction;
+            
+            if (!currentUserId) {
+                showNotification('ত্রুটি: আপনার মডারেটর আইডি পাওয়া যায়নি। লগইন করে আবার চেষ্টা করুন।', 'error');
+                return;
+            }
+
+            if (actionType === 'rejectProof') {
+                 const rejectionReason = rejectionReasonInput.value.trim();
+                 if (!rejectionReason) {
+                     showNotification('প্রুফ বাতিল করার জন্য কারণ উল্লেখ করা আবশ্যক।', 'error');
+                     return;
+                 }
+                 // 🔥 নতুন: বাতিলের কারণসহ হ্যান্ডলার কল করা
+                 window.handleRejectProof(data.taskId, data.proofId, data.userId, rejectionReason);
+            } else if (actionType === 'approveProof') {
+                window.handleApproveProof(data.taskId, data.proofId, data.userId, data.points); 
+            }
+            
+            closeModeratorModal(); // ট্রানজেকশন শুরু হওয়ার পর মডাল বন্ধ করা
+        };
+
+        window.onclick = function(event) {
+            if (event.target === moderatorModal) {
+                closeModeratorModal();
+            }
+        };
+        // End Modal functions
+
+
+        /**
+         * মডারেটর বা এডমিন রোল চেক করা এবং অনুমোদন না পেলে রিডাইরেক্ট করা।
+         * @param {string} userId - বর্তমান ইউজারের UID
+         */
+        const checkModeratorRole = (userId) => {
+             const userRef = ref(rtdb, `users/${userId}/role`);
+             onValue(userRef, (snapshot) => {
+                 const role = snapshot.val();
+                 // Admin can also access the moderator page
+                 if (role !== 'moderator' && role !== 'admin') { 
+                     showNotification("অনুমতি নেই! শুধু মডারেটর বা এডমিনরাই এই পেজে প্রবেশ করতে পারে।", 'error');
+                     // অননুমোদিত ইউজারকে ড্যাশবোর্ডে পাঠিয়ে দেওয়া
+                     setTimeout(() => { window.location.href = 'index.html'; }, 1500); 
+                 } else {
+                     startDataListeners(); // যদি অনুমোদিত হয়, তাহলে প্রুফ লোড করা শুরু করুন
+                 }
+             }, { onlyOnce: true });
+        };
+
+
+        // AUTH CHECK - Ensures user is logged in and starts role check
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUserId = user.uid;
-                listenForProofs(); 
+                checkModeratorRole(currentUserId); 
             } else {
                 window.location.href = 'login.html';
             }
         });
         
+        // ডেটা লিসেনার শুরু করার জন্য একটি ফাংশন তৈরি করা হলো
+        const startDataListeners = () => {
+            // ১. ইউজারের ডেটা ক্যাশ করা (প্রুফ রেন্ডারিং এর জন্য প্রয়োজন)
+            onValue(ref(rtdb, 'users'), (snapshot) => {
+                const users = snapshot.val() || {};
+                allUsersData = users; // ক্যাশ আপডেট করা
+            });
+
+            // ২. টাস্ক ডেটা লোড করা এবং প্রুফ রেন্ডার করা
+            const tasksRef = ref(rtdb, 'tasks');
+            onValue(tasksRef, (snapshot) => {
+                const tasks = snapshot.val() || {};
+                renderProofs(tasks); 
+                loadingIndicator.classList.add('hidden');
+            }, (error) => {
+                console.error("User tasks load error:", error);
+                proofsGrid.innerHTML = '<div class="col-span-full text-center py-12 text-red-500 text-lg">ডেটা লোড করতে সমস্যা হয়েছে।</div>';
+                loadingIndicator.classList.add('hidden');
+            });
+        }
+        
+        /**
+         * টাস্কের প্রকারভেদের উপর ভিত্তি করে আইকন ক্লাস নির্ধারণ করে।
+         */
+        const getTaskTypeIcon = (type) => {
+            switch(type.toLowerCase()) {
+                case 'like': return 'fa-thumbs-up text-blue-600';
+                case 'comment': return 'fa-comment text-indigo-600';
+                case 'share': return 'fa-share text-cyan-600';
+                case 'follow': return 'fa-user-plus text-purple-600';
+                case 'group': return 'fa-users text-teal-600'; // নতুন যোগ করা হয়েছে
+                default: return 'fa-list-check text-gray-600';
+            }
+        };
+
         /**
          * প্রোফাইল ছবি এবং জেনেরিক প্লেসহোল্ডার তৈরি করার ফাংশন
-         * @param {string} userName - ইউজারের নাম
-         * @param {string|null} photoUrl - প্রোফাইল ছবির URL
-         * @param {boolean} isVerified - ইউজার ভেরিফাইড কিনা
-         * @returns {string} - HTML স্ট্রিং (কন্টেইনার সহ)
          */
         const getProfileAvatarHtml = (userName, photoUrl, isVerified) => {
             let avatarHtml;
-            
+            const initial = (userName.charAt(0) || 'A').toUpperCase();
+
             if (photoUrl) {
-                // ছবির জন্য img ট্যাগ
-                avatarHtml = `<img src="${photoUrl}" alt="${userName} Profile" class="profile-avatar" onerror="this.onerror=null; this.src='https://placehold.co/40x40/a5b4fc/ffffff?text=${(userName.charAt(0) || 'A').toUpperCase()}'; this.className='avatar-placeholder';">`;
+                avatarHtml = `<img src="${photoUrl}" alt="${userName} Profile" class="profile-avatar" onerror="this.onerror=null; this.src='https://placehold.co/40x40/a5b4fc/ffffff?text=${initial}'; this.className='avatar-placeholder';">`;
             } else {
-                // প্লেসহোল্ডারের জন্য div
-                const initial = (userName.charAt(0) || 'A').toUpperCase();
                 avatarHtml = `<div class="avatar-placeholder">${initial}</div>`;
             }
-
-            let badgeHtml = '';
-            if (isVerified) {
-                // ভেরিফাইড ব্যাজ
-                badgeHtml = `<span class="verified-badge"><i class="fa fa-check" aria-hidden="true"></i></span>`;
-            }
-            
-            // কন্টেইনারে ছবি/প্লেসহোল্ডার এবং ব্যাজ একসাথে রাখা
+            let badgeHtml = isVerified ? `<span class="verified-badge"><i class="fa fa-check" aria-hidden="true"></i></span>` : '';
             return `<div class="profile-photo-container">${avatarHtml}${badgeHtml}</div>`;
         };
 
-        /**
-         * ইউজারের ডাটাবেজ থেকে প্রোফাইল ছবি ও ভেরিফিকেশন স্ট্যাটাস লোড করার ফাংশন
-         * @param {string} userId - ইউজারের আইডি
-         * @returns {object} - { profilePhotoUrl, facebookName, isVerified }
-         */
-        const fetchUserData = async (userId) => {
-            try {
-                const userSnapshot = await get(ref(rtdb, `users/${userId}`));
-                const userData = userSnapshot.val();
-                if (userData) {
-                    return {
-                        profilePhotoUrl: userData.profilePhotoUrl || null,
-                        facebookName: userData.facebookName || 'নাম নেই',
-                        isVerified: !!userData.isVerified // Ensure it's a boolean
-                    };
-                }
-            } catch (error) {
-                console.error(`Error fetching user data for ${userId}:`, error);
-            }
-            return { profilePhotoUrl: null, facebookName: 'নাম নেই', isVerified: false };
-        };
-
         // Function to render proofs
-        const renderProofs = async (tasks) => {
+        const renderProofs = (tasks) => {
             proofsGrid.innerHTML = '';
             let proofsFound = false;
             
-            const proofPromises = [];
+            const proofsToRender = [];
 
-            // সমস্ত প্রুফ থেকে প্রসেস করার জন্য ডেটা সংগ্রহ করা
             for (const taskId in tasks) {
                 const task = tasks[taskId];
                 if (task.proofs) {
@@ -238,56 +416,32 @@
                         
                         if (proof.status === 'pending') {
                             proofsFound = true;
+                            // ক্যাশ করা ইউজার ডেটা ব্যবহার করা হচ্ছে
+                            const userData = allUsersData[proof.userId] || {};
                             
-                            // User Data Fetching promise যোগ করা
-                            proofPromises.push(async () => {
-                                const userData = await fetchUserData(proof.userId);
-                                return { taskId, proofId, task, proof, userData };
-                            });
+                            proofsToRender.push({ taskId, proofId, task, proof, userData });
                         }
                     }
                 }
             }
 
-            // যদি কোনো প্রুফ না থাকে
             if (!proofsFound) {
                 proofsGrid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500 text-lg">🎉 এখন রিভিউ করার জন্য কোনো নতুন প্রুফ নেই।</div>';
                 return;
             }
 
-            // সমস্ত প্রুফ ডেটা সমান্তরালে লোড করা
-            const resolvedProofs = await Promise.all(proofPromises.map(p => p()));
-            
-            // রেন্ডার করা
-            resolvedProofs.forEach(({ taskId, proofId, task, proof, userData }) => {
-                const { profilePhotoUrl, facebookName, isVerified } = userData;
+            proofsToRender.forEach(({ taskId, proofId, task, proof, userData }) => {
+                const userDisplayName = userData.facebookName || proof.facebookName || 'নাম নেই';
+                const { profilePhotoUrl, isVerified } = userData;
 
-                // টাস্ক টাইপ অনুযায়ী ফেসবুকের আইকন
-                let iconClass;
-                switch(task.taskType) {
-                    case 'like':
-                        iconClass = 'fa-thumbs-up text-blue-600';
-                        break;
-                    case 'comment':
-                        iconClass = 'fa-comment text-indigo-600';
-                        break;
-                    case 'share':
-                        iconClass = 'fa-share text-cyan-600';
-                        break;
-                    case 'follow':
-                        iconClass = 'fa-user-plus text-purple-600';
-                        break;
-                    default:
-                        iconClass = 'fa-list-check text-gray-600';
-                }
+                const taskIconClass = getTaskTypeIcon(task.taskType);
+                const avatarHtml = getProfileAvatarHtml(userDisplayName, profilePhotoUrl, isVerified);
                 
-                const avatarHtml = getProfileAvatarHtml(facebookName, profilePhotoUrl, isVerified);
-
                 const proofCard = `
                     <div class="proof-card">
                         <div class="flex items-center justify-between mb-4 pb-4 border-b">
                             <div class="flex items-center gap-3">
-                                <i class="fas ${iconClass} text-2xl"></i>
+                                <i class="fas ${taskIconClass} text-2xl"></i>
                                 <div>
                                     <h4 class="font-bold text-gray-800">${task.taskType} টাস্ক</h4>
                                     <p class="text-sm text-gray-500 font-semibold">
@@ -296,35 +450,41 @@
                                 </div>
                             </div>
                         </div>
-                        
                         <div class="space-y-3 mb-6 text-sm">
-                            <!-- প্রোফাইল ছবি ও ভেরিফিকেশন ব্যাজ সহ ইউজারের তথ্য -->
                             <div class="flex items-center gap-3 p-2 bg-indigo-50 rounded-lg border border-indigo-200">
-                                ${avatarHtml} <!-- ডাইনামিক প্রোফাইল ছবি, প্লেসহোল্ডার এবং ভেরিফাইড ব্যাজ -->
+                                ${avatarHtml} 
                                 <div class="flex-1 truncate">
-                                    <p class="font-bold text-gray-800 truncate leading-tight">${facebookName}</p>
+                                    <p class="font-bold text-gray-800 truncate leading-tight">${userDisplayName}</p>
                                     <p class="text-xs text-gray-500 font-mono truncate">
                                         ID: ${proof.userId.substring(0, 10)}...
                                     </p>
                                 </div>
                             </div>
-                            <!-- প্রোফাইল ছবি সহ ইউজারের তথ্যের শেষ -->
-                            
                             <p>
                                 <span class="font-medium text-gray-700">টাস্ক লিংক:</span> 
                                 <a href="${task.taskLink}" target="_blank" class="brand-blue-text hover:underline break-all block text-xs">${task.taskLink}</a>
                             </p>
                             <p>
-                                <span class="font-medium text-gray-700">ফেসবুক আইডি লিংক:</span> 
-                                <a href="${proof.facebookLink}" target="_blank" class="brand-blue-text hover:underline break-all block text-xs">${proof.facebookLink}</a>
+                                <span class="font-medium text-gray-700">জমা দেওয়া নাম:</span> 
+                                <span class="font-semibold text-gray-800 break-all block text-xs">${proof.facebookName}</span>
                             </p>
+                            
+                            <!-- 🔥 আপডেট: স্ক্রিনশট প্রুফ ডিসপ্লে -->
+                            ${proof.screenshotUrl ? `
+                                <div class="mt-4 pt-4 border-t border-gray-100">
+                                    <span class="font-medium text-gray-700 block mb-2"><i class="fas fa-image text-green-500 mr-2"></i> স্ক্রিনশট প্রুফ:</span>
+                                    <img src="${proof.screenshotUrl}" alt="স্ক্রিনশট প্রুফ" 
+                                         class="w-full h-auto max-h-48 object-contain rounded-lg border border-gray-200 cursor-pointer"
+                                         onclick="window.open('${proof.screenshotUrl}', '_blank')" />
+                                </div>
+                            ` : (proof.facebookLink ? `<p class="text-xs text-red-500 italic">পুরোনো প্রুফ ডেটা, শুধুমাত্র ফেসবুক লিংক আছে: <a href="${proof.facebookLink}" target="_blank" class="text-blue-500">দেখুন</a></p>` : '')}
+
                         </div>
-                        
                         <div class="flex gap-4">
-                            <button class="flex-1 bg-green-500 text-white py-2.5 rounded-lg font-bold text-sm hover:bg-green-600 transition duration-200" onclick="approveProof('${taskId}', '${proofId}', '${proof.userId}', ${task.pointsPerTask})">
+                            <button class="flex-1 bg-green-500 text-white py-2.5 rounded-lg font-bold text-sm hover:bg-green-600 transition duration-200" onclick="openModeratorModal('approveProof', { taskId: '${taskId}', proofId: '${proofId}', userId: '${proof.userId}', points: ${task.pointsPerTask} })">
                                 <i class="fas fa-check-circle mr-1"></i> অনুমোদন
                             </button>
-                            <button class="flex-1 bg-red-500 text-white py-2.5 rounded-lg font-bold text-sm hover:bg-red-600 transition duration-200" onclick="rejectProof('${taskId}', '${proofId}', '${proof.userId}')">
+                            <button class="flex-1 bg-red-500 text-white py-2.5 rounded-lg font-bold text-sm hover:bg-red-600 transition duration-200" onclick="openModeratorModal('rejectProof', { taskId: '${taskId}', proofId: '${proofId}', userId: '${proof.userId}' })">
                                 <i class="fas fa-times-circle mr-1"></i> বাতিল
                             </button>
                         </div>
@@ -334,32 +494,24 @@
             });
         };
         
-        // Listen for data changes in Realtime Database
-        const listenForProofs = () => {
-            const tasksRef = ref(rtdb, 'tasks');
-            // onValue লিসেনার সেট করা, এটি বারবার কল হবে যখনই tasks নোডে পরিবর্তন আসবে
-            onValue(tasksRef, (snapshot) => {
-                const tasks = snapshot.val() || {};
-                // যেহেতু renderProofs এখন অ্যাসিঙ্ক্রোনাস, তাই একে await করা সম্ভব না, তবে কল করতে হবে
-                renderProofs(tasks); 
-                loadingIndicator.classList.add('hidden');
-            }, (error) => {
-                console.error("Error loading tasks for moderator:", error);
-                proofsGrid.innerHTML = '<div class="col-span-full text-center py-12 text-red-500 text-lg">ডেটা লোড করতে সমস্যা হয়েছে।</div>';
-                loadingIndicator.classList.add('hidden');
-            });
-        }
-        
-        // গ্লোবাল ফাংশন: প্রুফ অনুমোদন (পূর্বের মতোই আছে)
-        window.approveProof = async (taskId, proofId, userId, pointsToAdd) => {
-            if (!window.confirm("আপনি কি নিশ্চিত এই প্রুফটি অনুমোদন করতে চান? এটি ইউজারকে পয়েন্ট দেবে।")) return;
+        // গ্লোবাল ফাংশন: প্রুফ অনুমোদন (মডারেটর আইডি রেকর্ড করা হলো)
+        // 🔥 আপডেট: trustScore +5 যুক্ত করা হয়েছে
+        window.handleApproveProof = async (taskId, proofId, userId, pointsToAdd) => {
+            showNotification("অনুমোদন প্রক্রিয়া চলছে...", 'info');
+            
+            const APPROVE_trust_CHANGE = 5; // অনুমোদনের জন্য +5
+            
+            if (!currentUserId) {
+                showNotification('ত্রুটি: আপনার মডারেটর আইডি পাওয়া যায়নি।', 'error');
+                return;
+            }
             
             const proofRef = ref(rtdb, `tasks/${taskId}/proofs/${proofId}`);
             const userRef = ref(rtdb, `users/${userId}`);
             const taskRef = ref(rtdb, `tasks/${taskId}`);
             
             try {
-                // Check if the proof is already processed
+                // ১. স্ট্যাটাস চেক এবং টাস্ক স্ট্যাটাস আপডেট
                 const snapshot = await get(proofRef);
                 const currentProof = snapshot.val();
                 if (!currentProof || currentProof.status !== 'pending') {
@@ -367,58 +519,79 @@
                     return;
                 }
 
-                // Update proof status to 'approved'
-                await update(proofRef, { status: 'approved', moderatorId: currentUserId, reviewedAt: Date.now() });
+                // 🔥 Fix: মডারেটরের আইডি (currentUserId) এবং সময় (reviewedAt) ডাটাবেজে এন্ট্রি করা হলো
+                await update(proofRef, { status: 'approved', reviewedBy: currentUserId, reviewedAt: Date.now() });
                 
-                // Atomically update user points and tasks completed count
+                // ২. ট্রানজেকশনের মাধ্যমে পয়েন্ট, টাস্ক কাউন্ট এবং trust Score আপডেট
                 const userUpdatePromise = runTransaction(userRef, (currentData) => {
                     if (currentData) {
                         const newPoints = (currentData.points || 0) + pointsToAdd;
                         const newTasksCompleted = (currentData.tasksCompleted || 0) + 1;
                         
+                        // 🔥 trust Score আপডেট করা
+                        const currenttrustScore = currentData.trustScore || 0;
+                        const newtrustScore = currenttrustScore + APPROVE_trust_CHANGE;
+                        
                         currentData.points = newPoints;
                         currentData.tasksCompleted = newTasksCompleted;
+                        // 🔥 গুরুত্বপূর্ণ ফিক্স: trustScore কে ০ থেকে ১০০ এর মধ্যে সীমাবদ্ধ করা
+                        currentData.trustScore = Math.min(100, Math.max(0, newtrustScore));
+                        
                         currentData.completedTasks = currentData.completedTasks || {};
                         currentData.completedTasks[taskId] = 'approved'; 
+                        
+                        // 🔥 অনুমোদনের সময় সাসপেনশন শর্তাবলী প্রভাব ফেলবে না, তবে যদি মেয়াদ শেষ হয়ে থাকে তবে তা ক্লিয়ার করে দেওয়া হবে
+                        if (currentData.suspension && currentData.suspension.suspendUntil && currentData.suspension.suspendUntil < Date.now()) {
+                            // 🔥 পরিবর্তন: suspension অবজেক্ট আপডেট
+                            currentData.suspension = null; 
+                        }
                     }
-                    return currentData;
+                    return currentData; 
                 });
                 
-                // Atomically update task completed count and status
+                // ৩. টাস্কের completedCount আপডেট করা
                 const taskUpdatePromise = runTransaction(taskRef, (currentData) => {
                     if (currentData) {
                         currentData.completedCount = (currentData.completedCount || 0) + 1;
-                        if (currentData.completedCount >= currentData.quantity) {
+                        if (currentData.quantity && currentData.completedCount >= currentData.quantity) {
                             currentData.status = 'completed';
                         }
                     }
                     return currentData;
                 });
-
+                
                 const [userResult, taskResult] = await Promise.all([userUpdatePromise, taskUpdatePromise]);
                 
-                if (userResult.committed && taskResult.committed) {
-                    console.log('Proof approved and points awarded successfully.');
-                    showNotification('প্রুফ সফলভাবে অনুমোদিত হয়েছে এবং পয়েন্ট দেওয়া হয়েছে!', 'success');
+                if (userResult.committed && userResult.snapshot.val() && taskResult.committed) {
+                    const finaltrustScore = userResult.snapshot.val().trustScore;
+                    showNotification(`প্রুফ সফলভাবে অনুমোদিত হয়েছে (+${pointsToAdd} পয়েন্ট, ক্রেডিবিলিটি স্কোর +${APPROVE_trust_CHANGE})! নতুন স্কোর: ${finaltrustScore}`, 'success');
+                } else if (userResult.committed === false || taskResult.committed === false) {
+                     showNotification('পয়েন্ট আপডেট ব্যর্থ হয়েছে। ডেটাবেজ কনসোল পরীক্ষা করুন।', 'error');
                 } else {
-                    throw new Error("Transaction failed or data was null.");
+                     showNotification('অজানা ত্রুটি! ট্রানজেকশন প্রক্রিয়াকরণে ব্যর্থতা।', 'error');
                 }
-
+                
             } catch (error) {
                 console.error("Error approving proof:", error);
-                showNotification(`প্রুফ অনুমোদন করতে ব্যর্থ: ${error.message}`, 'error');
+                showNotification("প্রুফ প্রক্রিয়াকরণে সমস্যা হয়েছে। বিস্তারিত কনসোলে দেখুন।", 'error');
             }
         };
 
-        // গ্লোবাল ফাংশন: প্রুফ বাতিল (পূর্বের মতোই আছে)
-        window.rejectProof = async (taskId, proofId, userId) => {
-            if (!window.confirm("আপনি কি নিশ্চিত এই প্রুফটি বাতিল করতে চান? ব্যবহারকারী আবার চেষ্টা করতে পারবে।")) return;
+        // 🔥 আপডেট: বাতিলের কারণসহ প্রুফ বাতিল ফাংশন
+        // 🔥 পরিবর্তন: সাসপেনশন ডেটা এখন users/{uid}/suspension পাথে সেভ হবে
+        window.handleRejectProof = async (taskId, proofId, userId, rejectionReason) => {
+            showNotification("বাতিল প্রক্রিয়া চলছে...", 'info');
+            
+            if (!currentUserId) {
+                showNotification('ত্রুটি: আপনার মডারেটর আইডি পাওয়া যায়নি।', 'error');
+                return;
+            }
             
             const proofRef = ref(rtdb, `tasks/${taskId}/proofs/${proofId}`);
             const userRef = ref(rtdb, `users/${userId}`);
             
             try {
-                // Check if the proof is already processed
+                // ১. স্ট্যাটাস চেক
                 const snapshot = await get(proofRef);
                 const currentProof = snapshot.val();
                 if (!currentProof || currentProof.status !== 'pending') {
@@ -426,34 +599,99 @@
                     return;
                 }
                 
-                // Update proof status to 'rejected'
-                await update(proofRef, { status: 'rejected', moderatorId: currentUserId, reviewedAt: Date.now() });
+                // ২. প্রুফ স্ট্যাটাস আপডেট
+                await update(proofRef, { 
+                    status: 'rejected', 
+                    reviewedBy: currentUserId, 
+                    reviewedAt: Date.now(),
+                    rejectionReason: rejectionReason 
+                });
                 
-                // Atomically update user's tasksRejected count and reset completedTasks entry
+                // ৩. ট্রানজেকশনের মাধ্যমে ইউজারের ব্যর্থতা কাউন্ট আপডেট, completedTasks এন্ট্রি মুছে ফেলা এবং trust Score আপডেট
+                let suspendedDurationText = GENERIC_WARNING; // ডিফল্ট ওয়ার্নিং মেসেজ
+                let suspensionDataToSet = null; // নতুন সাসপেনশন ডেটা সেট করার জন্য
+
                 const userResult = await runTransaction(userRef, (currentData) => {
                     if (currentData) {
                         currentData.tasksRejected = (currentData.tasksRejected || 0) + 1;
                         currentData.completedTasks = currentData.completedTasks || {};
-                        // Remove/reset the completed task status so user can retry
-                        delete currentData.completedTasks[taskId]; 
-                        // Set the overall completed task to 'rejected' so the user sees it in their history
-                        currentData.completedTasks[taskId] = 'rejected';
+                        delete currentData.completedTasks[taskId];
+                        
+                        // 🔥 trust Score আপডেট করা
+                        const currenttrustScore = currentData.trustScore || 100;
+                        const newtrustScore = currenttrustScore + REJECT_trust_CHANGE;
+                        currentData.trustScore = Math.min(100, Math.max(0, newtrustScore)); 
+                        
+                        // 🔥 সাসপেনশন শর্তাবলী প্রয়োগ
+                        let suspensionDurationMs = 0;
+                        let suspensionText = null;
+                        const currentSuspensionUntil = currentData.suspension?.suspendUntil || 0;
+                        
+                        for (const rule of SUSPENSION_RULES) {
+                            if (currentData.trustScore <= rule.score) {
+                                if (rule.durationMs > suspensionDurationMs) {
+                                    suspensionDurationMs = rule.durationMs;
+                                    suspensionText = rule.durationText;
+                                }
+                            }
+                        }
+
+                        if (suspensionDurationMs > 0) {
+                            const suspensionEndTime = Date.now() + suspensionDurationMs;
+                            
+                            if (suspensionEndTime > currentSuspensionUntil) {
+                                const reasonMessage = `trust Score ${currentData.trustScore} এ পৌঁছানোয় ${suspensionText} এর জন্য সাসপেন্ড।`;
+                                
+                                // সাসপেনশন ডেটা তৈরি
+                                suspensionDataToSet = {
+                                    suspended: true,
+                                    suspendUntil: suspensionEndTime,
+                                    reason: reasonMessage,
+                                    issuedBy: currentUserId, 
+                                    issuedAt: Date.now()
+                                };
+                                
+                                // ট্রানজেকশনের বাইরে নোটিফিকেশনের জন্য সাসপেনশন টেক্সট আপডেট
+                                suspendedDurationText = suspensionText;
+                                
+                                // 🔥🔥🔥 মূল পরিবর্তন: suspension অবজেক্টটি সরাসরি ইউজার ডেটার মধ্যে আপডেট করা
+                                currentData.suspension = suspensionDataToSet;
+                            }
+                        } else if (currentSuspensionUntil && currentSuspensionUntil < Date.now()) {
+                            // যদি স্কোর বেশি হয় এবং পুরানো সাসপেনশন মেয়াদোত্তীর্ণ হয়, তবে এটি সাফ করা
+                            currentData.suspension = null; 
+                        }
                     }
                     return currentData;
                 });
-
-                if (userResult.committed) {
-                    console.log('Proof rejected.');
-                    showNotification('প্রুফ সফলভাবে বাতিল করা হয়েছে। ব্যবহারকারী আবার চেষ্টা করতে পারবে।', 'info');
+                
+                // ৪. ফলাফল যাচাই এবং নোটিফিকেশন
+                if (userResult.committed && userResult.snapshot.val()) {
+                    const finaltrustScore = userResult.snapshot.val().trustScore;
+                    
+                    let notificationMessage = `প্রুফ সফলভাবে বাতিল করা হয়েছে (ক্রেডিবিলিটি স্কোর ${REJECT_trust_CHANGE})। নতুন স্কোর: ${finaltrustScore}।`;
+                    
+                    if (userResult.snapshot.val().suspension && userResult.snapshot.val().suspension.suspended) {
+                        notificationMessage += ` **ইউজারকে ${suspendedDurationText} এর জন্য সাসপেন্ড করা হয়েছে।**`;
+                    } else {
+                        notificationMessage += ` **সাধারণ সতর্কতা পাঠানো হয়েছে: "${GENERIC_WARNING}"**`;
+                    }
+                    
+                    showNotification(notificationMessage, 'warning'); 
                 } else {
-                     throw new Error("User transaction failed.");
+                    showNotification('ব্যবহারকারীর ডেটা আপডেট ব্যর্থ হয়েছে। ডেটাবেজ কনসোল পরীক্ষা করুন।', 'error');
                 }
                 
             } catch (error) {
                 console.error("Error rejecting proof:", error);
-                showNotification(`প্রুফ বাতিল করতে ব্যর্থ: ${error.message}`, 'error');
+                showNotification(`প্রুফ বাতিল করতে ব্যর্থ: ${error.message || 'অজানা ত্রুটি'}।`, 'error');
             }
         };
+        
+        // Expose modal handler functions to the window object
+        window.openModeratorModal = openModeratorModal;
+        window.handleApproveProof = handleApproveProof;
+        window.handleRejectProof = handleRejectProof;
         
     </script>
 </body>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>লিডারবোর্ড</title>
+    <title>কার্যসম্পাদন লিডারবোর্ড</title>
     <script src="https://cdn.tailwindcss.com"> </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -83,6 +83,24 @@
             font-size: 1.5rem;
             margin-right: 0.75rem;
         }
+        
+        /* 🔥 নতুন: ছোট স্টার রেটিং স্টাইল (বিশ্বাসযোগ্যতা) */
+        .small-rating-bar {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .small-star {
+            font-size: 0.75rem; /* ছোট আকার */
+        }
+        .filled-star {
+            color: #ffc107; /* সোনালী রং */
+        }
+
+        .empty-star {
+            color: #e9ecef; /* খালি তারার জন্য হালকা ধূসর */
+        }
+        /* 🔥 ছোট স্টার রেটিং স্টাইল শেষ */
     </style>
 </head>
 <body class="p-4 flex flex-col items-center justify-center">
@@ -92,15 +110,19 @@
         <header class="app-card p-6 text-center mb-6 md:mb-8">
             <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800 flex items-center justify-center gap-4">
                 <i class="fas fa-crown text-yellow-500 text-3xl md:text-4xl"></i>
-                পয়েন্ট লিডারবোর্ড
+                বিশ্বাসযোগ্যতা লিডারবোর্ড
                 <i class="fas fa-trophy text-blue-500 text-3xl md:text-4xl"></i>
             </h1>
+            <!-- 🔥 পরিবর্তন: র্যাঙ্কিং লজিক আপডেট করা হলো -->
+            <p class="text-sm text-gray-500 mt-2">র্যাঙ্কিং: শুধুমাত্র ট্রাস্ট স্কোরের ভিত্তিতে (বিশ্বাসযোগ্যতা)</p>
         </header>
 
         <main class="app-card p-4 md:p-6">
-            <h2 class="text-2xl font-bold text-gray-700 mb-6 text-center border-b pb-4">শীর্ষ ১০ ব্যবহারকারী</h2>
+            <h2 class="text-2xl font-bold text-gray-700 mb-6 text-center border-b pb-4">শীর্ষ ব্যবহারকারীগণ</h2>
             <ul class="space-y-4" id="leaderboard-list">
-                </ul>
+                <!-- লিডারবোর্ড আইটেম এখানে লোড হবে -->
+                <li class="text-center py-6 text-gray-500 text-lg" id="loading-message">ডেটা লোড হচ্ছে...</li>
+            </ul>
         </main>
 
         <div class="mt-8 text-center">
@@ -113,32 +135,128 @@
     </div>
 
     <script type="module">
-        import { rtdb, ref, onValue, query, orderByChild, limitToLast } from "./rtdb-config.js";
+        // Firebase Realtime Database Imports
+        import { rtdb, ref, onValue } from "./rtdb-config.js";
         
+        // ======================================================================
+        // 🔥 বিশ্বাসযোগ্যতা রেটিং গণনা করার নতুন ফাংশন
+        // ======================================================================
+        /**
+         * trustScore-কে নতুন স্কেল অনুযায়ী ৫-স্টার স্কেলে রূপান্তর করে।
+         * 20 = 1 Star, 40 = 2 Stars, 60 = 3 Stars, 80 = 4 Stars, 100 = 5 Stars
+         * @param {number} rawScore - ডাটাবেজের raw trustScore.
+         * @returns {number} - ৫-স্টার রেটিং (০.০ থেকে ৫.০)।
+         */
+        function mapScoreToFiveStarRating(rawScore) {
+            const score = rawScore || 0;
+            const step = 20; // প্রতি স্টারের জন্য ২০ পয়েন্ট
+            const maxScore = 100;
+            const minRating = 1.0;
+            const maxRating = 5.0;
+
+            if (score <= 20) return minRating;
+            if (score >= maxScore) return maxRating;
+
+            // 20 থেকে 100 এর মধ্যে স্কোরকে 1.0 থেকে 5.0 এ ম্যাপ করা
+            // 20 (1 star) থেকে 100 (5 stars) এর রেঞ্জ
+            const normalizedScore = (score - 20) / (maxScore - 20); // 0 থেকে 1.0
+            let rating = normalizedScore * (maxRating - minRating) + minRating;
+
+            // 0.5 স্টেপে রাউন্ড করা
+            rating = Math.round(rating * 2) / 2;
+            
+            return parseFloat(rating.toFixed(1));
+        }
+
+        /**
+         * স্কোর অনুযায়ী ছোট স্টার আইকন HTML রেন্ডার করে।
+         * @param {number} score - বিশ্বাসযোগ্যতা স্কোর (০.০ থেকে ৫.০)।
+         * @returns {string} - স্টার আইকন HTML স্ট্রিং।
+         */
+        const renderSmallStarRating = (score) => {
+            const roundedScore = Math.round(score * 2) / 2; 
+            let html = '';
+            for (let i = 1; i <= 5; i++) {
+                if (roundedScore >= i) {
+                    html += `<i class="fas fa-star small-star filled-star"></i>`;
+                } else if (roundedScore === i - 0.5) {
+                    html += `<i class="fas fa-star-half-alt small-star filled-star"></i>`;
+                } else {
+                    html += `<i class="far fa-star small-star filled-star empty-star"></i>`;
+                }
+            }
+            return html;
+        };
+        
+        // ======================================================================
+        // 🔥 লিডারবোর্ড লোড করা
+        // ======================================================================
         document.addEventListener('DOMContentLoaded', () => {
             const leaderboardList = document.getElementById('leaderboard-list');
             
+            // RTDB থেকে সমস্ত ব্যবহারকারীর ডেটা আনা হচ্ছে
             const usersRef = ref(rtdb, "users");
-            const topUsersQuery = query(usersRef, orderByChild("points"), limitToLast(10));
-
-            onValue(topUsersQuery, (snapshot) => {
+            
+            onValue(usersRef, (snapshot) => {
                 const usersData = snapshot.val();
-                leaderboardList.innerHTML = '';
+                leaderboardList.innerHTML = ''; // লোডিং মেসেজ মুছে ফেলার জন্য
                 
                 if (!usersData) {
                     leaderboardList.innerHTML = '<li class="text-center py-6 text-gray-500 text-lg">কোনো ব্যবহারকারী পাওয়া যায়নি।</li>';
                     return;
                 }
 
-                let sortedUsers = Object.keys(usersData).map(key => ({ id: key, ...usersData[key] }));
+                // ডেটা অবজেক্ট থেকে অ্যারেতে রূপান্তর করা এবং প্রয়োজনীয় মান গণনা করা
+                let calculatedUsers = Object.keys(usersData).map(key => {
+                    const user = usersData[key];
+                    
+                    // 🔥 পরিবর্তন: trustScore সরাসরি ডাটাবেজ থেকে নেওয়া হচ্ছে (trustScore বা trustScore, যেকোনো একটি থাকলেই হবে)
+                    const rawtrustScore = user.trustScore || user.trustScore || 0; 
+
+                    // 🔥 পরিবর্তন: raw trustScore কে ৫-স্টার রেটিংয়ে ম্যাপ করা
+                    const fiveStarRating = mapScoreToFiveStarRating(rawtrustScore); 
+                    
+                    const tasksCompleted = user.tasksCompleted || 0; 
+                    const totalTasks = tasksCompleted + (user.tasksRejected || 0);
+                    const successRate = totalTasks > 0 ? tasksCompleted / totalTasks : 0;
+
+                    return { 
+                        id: key, 
+                        ...user, 
+                        totalTasks, 
+                        successRate,
+                        fiveStarRating: fiveStarRating, 
+                        rawtrustScore: rawtrustScore
+                    };
+                }).filter(user => user.rawtrustScore > 0); // শুধুমাত্র যাদের স্কোর ০ এর বেশি, তাদের দেখানো হলো
+
                 
-                sortedUsers.sort((a, b) => (b.points || 0) - (a.points || 0));
+                // --- কাস্টম সর্টিং লজিক (জাভাস্ক্রিপ্ট) ---
+                calculatedUsers.sort((a, b) => {
+                    // 🔥 প্রধান সর্ট: শুধুমাত্র rawtrustScore এর ভিত্তিতে (Descending - সর্বোচ্চ থেকে সর্বনিম্ন)
+                    if (b.rawtrustScore !== a.rawtrustScore) {
+                        return b.rawtrustScore - a.rawtrustScore;
+                    }
+
+                    // টাই-ব্রেকার ১: মোট কাজ (যদি স্কোর সমান হয়)
+                    if (b.totalTasks !== a.totalTasks) {
+                        return b.totalTasks - a.totalTasks;
+                    }
+                    
+                    // টাই-ব্রেকার ২: সফলতার হার
+                    return b.successRate - a.successRate;
+                });
 
                 let rank = 1;
                 
-                const topTenUsers = sortedUsers.slice(0, 10);
+                // শুধুমাত্র শীর্ষ ১০ জন ব্যবহারকারীকে দেখানো
+                const topTenUsers = calculatedUsers.slice(0, 10); 
 
                 topTenUsers.forEach((user) => {
+                    const successRatePercentage = (user.successRate * 100).toFixed(1);
+                    const totalTasks = user.totalTasks;
+                    const ratingHtml = renderSmallStarRating(user.fiveStarRating); 
+
                     const listItem = document.createElement('li');
                     
                     let rankClass = '';
@@ -146,7 +264,7 @@
 
                     if (rank === 1) {
                         rankClass = 'first';
-                        rankIcon = '<i class="fas fa-medal medal-icon text-white drop-shadow-md" style="color: #FFD700;"></i>';
+                        rankIcon = '<i class="fas fa-medal medal-icon drop-shadow-md" style="color: #FFD700;"></i>';
                     } else if (rank === 2) {
                         rankClass = 'second';
                         rankIcon = '<i class="fas fa-medal medal-icon text-gray-600"></i>';
@@ -154,20 +272,39 @@
                         rankClass = 'third';
                         rankIcon = '<i class="fas fa-medal medal-icon text-orange-600"></i>';
                     }
-
-                    listItem.className = `leaderboard-item ${rankClass} flex items-center justify-between font-bold`;
+                    
+                    
+                    listItem.className = `leaderboard-item ${rankClass} flex items-center justify-between font-bold border-b border-gray-100 last:border-b-0`;
                     listItem.innerHTML = `
                         <div class="flex items-center">
                             ${rankIcon}
-                            <span class="text-base md:text-lg flex-grow">${user.facebookName || 'ব্যবহারকারী'}</span>
+                            <div class="ml-2">
+                                <span class="text-base md:text-lg font-bold ${rank <= 3 ? 'text-gray-800' : 'text-gray-700'}">${user.facebookName || 'ব্যবহারকারী'}</span>
+                                <!-- 🔥 পরিবর্তন: Raw Score সহ ৫-স্টার রেটিং যোগ করা হলো -->
+                                <div class="small-rating-bar mt-1">
+                                    ${ratingHtml}
+                                    <span class="text-xs text-gray-600 ml-1">
+                                        (${user.fiveStarRating.toFixed(1)} স্টার / ${user.rawtrustScore.toLocaleString('bn-BD')} স্কোর)
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                        <span class="text-lg md:text-xl font-extrabold text-green-600">${(user.points || 0).toLocaleString('bn-BD')} পয়েন্ট</span>
+                        <div class="text-right flex flex-col items-end">
+                            <!-- মোট কাজ ও সফলতার হার দেখানো হচ্ছে, কিন্তু র্যাঙ্কিং এ ব্যবহৃত হচ্ছে না -->
+                            <span class="text-lg md:text-xl font-extrabold text-blue-600 leading-tight">${totalTasks.toLocaleString('bn-BD')} মোট কাজ</span>
+                            <span class="text-sm font-medium text-gray-600 leading-tight mt-1">সফলতার হার: ${successRatePercentage}%</span>
+                        </div>
                     `;
                     leaderboardList.appendChild(listItem);
                     rank++;
                 });
+                
+                if (calculatedUsers.length === 0) {
+                     leaderboardList.innerHTML = '<li class="text-center py-6 text-gray-500 text-lg">কোনো ব্যবহারকারী এখনো কাজ শুরু করেনি।</li>';
+                }
             });
         });
     </script>
 </body>
 </html>
+

@@ -1,6 +1,23 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
 import { getAuth, signOut, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
-import { getDatabase, set, ref, update, onValue, get, push, runTransaction, remove, query, orderByChild, equalTo, limitToLast } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+// 🔥 পরিবর্তন: limitToFirst যোগ করা হলো
+import { 
+    getDatabase, 
+    set, 
+    ref, 
+    update, 
+    onValue, 
+    get, 
+    push, 
+    runTransaction, 
+    remove, 
+    query, 
+    orderByChild, 
+    equalTo, 
+    limitToLast,
+    limitToFirst // <--- নতুন ইম্পোর্ট
+} from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyDgFaTrHW7Grp_Q22p6KNcHZxaEujHsLsE",
   authDomain: "exchange-project-d4028.firebaseapp.com",
@@ -111,6 +128,7 @@ export {
     query,
     orderByChild,
     equalTo,
-    limitToLast
+    limitToLast,
+    limitToFirst // <--- নতুন এক্সপোর্ট
 };
 
