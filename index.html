@@ -400,7 +400,7 @@
                                   file:text-sm file:font-semibold
                                   file:bg-blue-50 file:text-blue-700
                                   hover:file:bg-blue-100" required>
-                    <p class="text-xs text-gray-500 mt-1">শুধুমাত্র JPG/PNG ফাইল গ্রহণযোগ্য। (অনুগ্রহ করে ফাইল সাইজ কম রাখার চেষ্টা করুন)</p>
+                    <p class="text-xs text-gray-500 mt-1">শুধুমাত্র JPG/PNG ফাইল গ্রহণযোগ্য। (ফাইল সাইজ কম রাখা হয়েছে আপলোড দ্রুত করার জন্য)</p>
                 </div>
                 
                 <button type="submit" class="w-full brand-blue text-white py-3 text-center rounded-lg font-bold hover:shadow-lg transition duration-200">
@@ -458,6 +458,62 @@
         const CLOUDINARY_UPLOAD_PRESET = 'Profilepicture'; // profile.html থেকে নেওয়া
         const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
         // ----------------------------------------------------------------------
+        
+        /**
+         * ইনপুট ফাইলকে ক্লায়েন্ট-সাইডে সংকুচিত (কম্প্রেস) করে নতুন Blob হিসেবে রিটার্ন করে।
+         * এটি ছবির রেজোলিউশন (maxWidth=1024) এবং কোয়ালিটি (0.8) কমিয়ে ফাইল সাইজ উল্লেখযোগ্যভাবে হ্রাস করে।
+         * @param {File} file - ইনপুট ইমেজ ফাইল (স্ক্রিনশট)
+         * @param {number} maxWidth - ছবির সর্বোচ্চ প্রস্থ (যেমন: 1024px)
+         * @param {number} quality - JPEG/WebP কম্প্রেশন কোয়ালিটি (0.0 থেকে 1.0)
+         * @returns {Promise<Blob>} - সংকুচিত Blob অবজেক্ট
+         */
+        const compressImage = (file, maxWidth = 1024, quality = 0.8) => {
+            return new Promise((resolve, reject) => {
+                // ফাইল যদি 1MB এর কম হয়, তাহলে কম্প্রেস করার দরকার নেই
+                if (file.size < 1024 * 1024) {
+                    console.log("কনসোল লগ: ইমেজ সাইজ 1MB এর কম, কম্প্রেস এড়িয়ে যাওয়া হলো।");
+                    resolve(file);
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = event => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        // প্রস্থ যদি maxWidth এর চেয়ে বেশি হয়, তবে আকার পরিবর্তন করো
+                        if (width > maxWidth) {
+                            height = height * (maxWidth / width);
+                            width = maxWidth;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+
+                        const ctx = canvas.getContext('2d');
+                        // ছবির রেন্ডারিং মান উন্নত করা
+                        ctx.imageSmoothingEnabled = true;
+                        ctx.imageSmoothingQuality = 'high';
+                        
+                        // ছবি আঁকা
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // Blob এ রূপান্তর করে কোয়ালিটি কমানো
+                        canvas.toBlob(blob => {
+                            resolve(blob);
+                        }, 'image/jpeg', quality); // JPEG ফরম্যাট ব্যবহার করা হলো
+                    };
+                    img.onerror = error => reject(error);
+                };
+                reader.onerror = error => reject(error);
+            });
+        };
+
 
         /**
          * সময়কালকে (মিলিসেকেন্ড) ঘন্টা, মিনিট, সেকেন্ডে ফরম্যাট করে বাংলা স্ট্রিং তৈরি করে।
@@ -806,7 +862,12 @@
 
         // Cloudinary তে ছবি আপলোডের ফাংশন (profile.html থেকে আনা)
         async function uploadToCloudinary(file) {
-            if (!file) return null;
+            if (!file) {
+                console.warn("কনসোল লগ: Cloudinary আপলোড ব্যর্থ। কোনো ফাইল পাওয়া যায়নি।");
+                return null;
+            }
+            
+            console.log(`কনসোল লগ: Cloudinary আপলোড শুরু: ফাইল সাইজ ${file.size} bytes`);
 
             const formData = new FormData();
             formData.append('file', file);
@@ -823,15 +884,16 @@
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    console.error("Cloudinary Error:", errorData);
+                    console.error("কনসোল লগ: Cloudinary API ত্রুটি:", errorData);
                     throw new Error(`Cloudinary আপলোড ব্যর্থ: ${errorData.error.message || response.statusText}`);
                 }
 
                 const data = await response.json();
+                console.log("কনসোল লগ: Cloudinary আপলোড সফল। URL:", data.secure_url);
                 showNotification("স্ক্রিনশট সফলভাবে আপলোড হয়েছে!", 'success');
                 return data.secure_url; // আপলোড করা ছবির URL
             } catch (error) {
-                console.error("Error during Cloudinary upload:", error);
+                console.error("কনসোল লগ: Cloudinary আপলোড চলাকালীন ক্যাচড ত্রুটি:", error);
                 showNotification(`স্ক্রিনশট আপলোড ব্যর্থ হয়েছে।`, 'error');
                 throw error; 
             }
@@ -1269,6 +1331,8 @@
         submitProofForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            console.log("কনসোল লগ: প্রুফ জমা দেওয়ার প্রক্রিয়া শুরু হলো।");
+
             const submitButton = submitProofForm.querySelector('button[type="submit"]');
             submitButton.disabled = true;
             submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> জমা হচ্ছে...';
@@ -1279,6 +1343,7 @@
             
             // ভ্যালিডেশন আপডেট
             if (!facebookName || !screenshotFile) {
+                console.error("কনসোল লগ: ভ্যালিডেশন ব্যর্থ। ফেসবুক নাম বা স্ক্রিনশট ফাইল অনুপস্থিত।");
                 showNotification('ফেসবুক আইডির নাম এবং স্ক্রিনশট ফাইল অবশ্যই জমা দিতে হবে।', 'error');
                 submitButton.disabled = false;
                 submitButton.innerHTML = '<i class="fas fa-upload mr-2"></i> জমা দিন';
@@ -1286,6 +1351,7 @@
             }
 
             if (!currentTaskId || !userId) {
+                console.error("কনসোল লগ: ভ্যালিডেশন ব্যর্থ। টাস্ক বা ইউজার আইডি পাওয়া যায়নি।");
                 showNotification('ত্রুটি: কাজ বা ব্যবহারকারীর আইডি পাওয়া যায়নি।', 'error');
                 submitButton.disabled = false;
                 submitButton.innerHTML = '<i class="fas fa-upload mr-2"></i> জমা দিন';
@@ -1295,9 +1361,23 @@
             let screenshotUrl = ''; // Cloudinary URL সংরক্ষণের জন্য
 
             try {
-                // 🔥 Cloudinary তে ছবি আপলোড করা
-                screenshotUrl = await uploadToCloudinary(screenshotFile);
-
+                // 🔥 নতুন স্টেপ: ক্লায়েন্ট-সাইডে ইমেজ কম্প্রেস করা
+                console.log("কনসোল লগ: ইমেজ কম্প্রেস করা শুরু হচ্ছে...");
+                showNotification("স্ক্রিনশট অপটিমাইজ করা হচ্ছে (ফাইল ছোট করা হচ্ছে)...", 'info');
+                // ছবির সর্বোচ্চ প্রস্থ 1024px রাখা হলো এবং কোয়ালিটি 0.8
+                const compressedBlob = await compressImage(screenshotFile, 1024, 0.8);
+                
+                // Blob থেকে File অবজেক্ট তৈরি করা
+                const compressedFile = new File([compressedBlob], screenshotFile.name, {
+                    type: compressedBlob.type,
+                    lastModified: Date.now()
+                });
+                console.log(`কনসোল লগ: ইমেজ কম্প্রেস সফল। আসল সাইজ: ${screenshotFile.size} bytes, কম্প্রেসড সাইজ: ${compressedFile.size} bytes`);
+                
+                // 🔥 Cloudinary তে সংকুচিত ছবি আপলোড করা
+                showNotification("সংকুচিত প্রুফ আপলোড শুরু হচ্ছে...", 'info');
+                screenshotUrl = await uploadToCloudinary(compressedFile); 
+                
                 if (!screenshotUrl) {
                     throw new Error("Cloudinary থেকে কোনো URL পাওয়া যায়নি।");
                 }
@@ -1314,29 +1394,40 @@
                     status: 'pending' 
                 };
 
+                // ১. ব্যবহারকারীর completedTasks স্ট্যাটাস আপডেট
                 const userCompletedTaskRef = ref(rtdb, `users/${userId}/completedTasks/${currentTaskId}`);
+                console.log("কনসোল লগ: Firebase: completedTasks স্ট্যাটাস আপডেট শুরু...");
                 await set(userCompletedTaskRef, 'pending');
-                
-                await push(proofRef, proofData);
+                console.log("কনসোল লগ: Firebase: completedTasks স্ট্যাটাস আপডেট সফল।");
 
-                // *** নতুন সংযোজন: ব্যবহারকারীর প্রোফাইলে শেষ জমা দেওয়া ডেটা সংরক্ষণ করা ***
+                // ২. প্রুফ ডেটা tasks/taskId/proofs এ যোগ
+                console.log("কনসোল লগ: Firebase: প্রুফ ডেটা push শুরু...");
+                await push(proofRef, proofData);
+                console.log("কনসোল লগ: Firebase: প্রুফ ডেটা push সফল।");
+
+                // ৩. ব্যবহারকারীর lastFacebookName আপডেট
                 const userUpdateRef = ref(rtdb, `users/${userId}`);
+                console.log("কনসোল লগ: Firebase: lastFacebookName আপডেট শুরু...");
                 await update(userUpdateRef, {
                     lastFacebookName: facebookName,
                 });
-                // *******************************************************************
+                console.log("কনসোল লগ: Firebase: lastFacebookName আপডেট সফল।");
 
+                // *** চূড়ান্ত সাফল্য ***
+                console.log("কনসোল লগ: সম্পূর্ণ প্রুফ জমা প্রক্রিয়া সফলভাবে সম্পন্ন হয়েছে।");
                 showNotification('প্রুফ সফলভাবে জমা দেওয়া হয়েছে! এডমিন রিভিউ করবে।', 'success');
                 submitProofForm.reset();
                 closeModal('submit-proof-modal');
 
             } catch (error) {
-                console.error("Proof submission failed:", error);
+                // *** চূড়ান্ত ব্যর্থতা ***
+                console.error("কনসোল লগ: প্রুফ জমা প্রক্রিয়ায় একটি গুরুতর ত্রুটি হয়েছে:", error.message);
                 // Cloudinary error already handled by showNotification inside uploadToCloudinary
                 if (!error.message.includes('Cloudinary')) { 
                     showNotification(`প্রুফ জমা দিতে ব্যর্থ: ${error.message}`, 'error');
                 }
             } finally {
+                console.log("কনসোল লগ: প্রুফ জমা দেওয়ার প্রক্রিয়া সমাপ্ত।");
                 submitButton.disabled = false;
                 submitButton.innerHTML = '<i class="fas fa-upload mr-2"></i> জমা দিন';
             }

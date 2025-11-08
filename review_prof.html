@@ -43,8 +43,7 @@
         }
 
         .app-card:hover {
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-            transform: translateY(-1px);
+            /* hover effect removed from task cards to keep focus on proofs */
         }
 
         .hidden {
@@ -93,7 +92,7 @@
             background-color: #f9fafb;
             border: 1px solid #e9ecef;
         }
-
+        
         /* হিস্ট্রি কার্ড স্টাইল */
         .history-item {
             padding: 1rem;
@@ -126,7 +125,7 @@
             border-radius: 12px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             width: 90%;
-            max-width: 450px; /* একটু বড় করা হলো */
+            max-width: 450px; 
             text-align: center;
             animation: zoomIn 0.3s ease-out;
         }
@@ -148,6 +147,50 @@
             font-size: 0.9rem;
             transition: background-color 0.3s;
         }
+        
+        /* রিপিটার এরিয়ার স্টাইল (রিপোর্ট কারণ) */
+        .reason-group {
+            margin-top: 1rem;
+            text-align: left;
+        }
+        
+        /* টাস্ক কন্টেইনার */
+        .task-container {
+            border: 2px solid #e9ecef;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+            background-color: #ffffff;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .task-header {
+            background-color: #0d6efd;
+            color: white;
+            padding: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        
+        .task-body {
+            padding: 1.5rem;
+            background-color: #fcfdff;
+        }
+
+        .proofs-list-accordion {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+
+        .proofs-list-accordion.expanded {
+            max-height: 5000px; /* পর্যাপ্ত বড় মান */
+        }
+        
     </style>
 </head>
 
@@ -155,41 +198,41 @@
 
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <p>লোড হচ্ছে...</p>
+        <p>টাস্ক ও প্রুফ লোড হচ্ছে...</p>
     </div>
     
     <div class="container max-w-4xl mx-auto hidden" id="main-content">
         <header class="app-card p-6 text-center mb-6 md:mb-8">
             <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800 flex items-center justify-center gap-4">
-                <i class="fas fa-file-circle-check text-green-500 text-3xl md:text-4xl"></i>
-                প্রুফ যাচাই করুন
+                <i class="fas fa-list-check text-indigo-600 text-3xl md:text-4xl"></i>
+                সমস্ত প্রুফ যাচাই ড্যাশবোর্ড
             </h1>
-            <p class="text-gray-500 font-semibold mt-2">আপনার তৈরি করা কাজের জন্য জমা পড়া প্রুফ</p>
+            <p class="text-gray-500 font-semibold mt-2">আপনার তৈরি করা টাস্ক অনুযায়ী অপেক্ষারত প্রুফগুলি এখানে দেখুন এবং অ্যাকশন নিন।</p>
         </header>
         
         <main>
-            <!-- 🔥 নতুন: পেন্ডিং প্রুফ সেকশন -->
-            <div id="pending-proofs-section" class="app-card p-6 mb-8">
-                <h2 class="text-2xl font-bold text-gray-700 mb-6 border-b pb-4 text-center">
-                    ⏳ অপেক্ষারত প্রুফ
-                </h2>
-                <div id="proofs-list" class="space-y-4">
-                    <!-- Pending proofs will be loaded here -->
-                </div>
+            <!-- সমস্ত টাস্ক ও তাদের প্রুফগুলি এখানে লোড হবে -->
+            <div id="all-tasks-container" class="space-y-6">
+                <!-- Task containers will be injected here -->
             </div>
             
-            <!-- 🔥 নতুন: প্রুফ হিস্ট্রি সেকশন -->
-            <div id="proof-history-section" class="app-card p-6 mb-8">
-                <h2 class="text-2xl font-bold text-gray-700 mb-6 border-b pb-4 text-center">
-                    📜 প্রুফ হিস্ট্রি (অনুমোদিত ও বাতিল)
-                </h2>
-                <div id="proofs-history-list" class="space-y-4">
-                    <!-- Approved and Rejected proofs will be loaded here -->
+            <!-- যদি কোনো টাস্ক না থাকে -->
+            <div id="no-tasks-found" class="hidden">
+                 <div class="app-card p-8 text-center bg-yellow-50">
+                    <i class="fas fa-clipboard-list text-6xl text-yellow-500 mb-4"></i>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-3">কোনো টাস্ক পাওয়া যায়নি</h2>
+                    <p class="text-gray-600 mb-5">
+                        আপনি এখনো কোনো কাজ তৈরি করেননি। নতুন কাজ তৈরি করে এখানে প্রুফ যাচাই শুরু করুন।
+                    </p>
+                    <a href="index.html" class="inline-flex items-center brand-blue text-white font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
+                        <i class="fas fa-plus mr-2"></i>
+                        নতুন টাস্ক তৈরি করুন
+                    </a>
                 </div>
             </div>
         </main>
-
-        <div class="mt-8 text-center">
+        
+        <div class="mt-8 text-center" id="back-to-dashboard">
             <a href="index.html" class="inline-flex items-center brand-blue text-white font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
                 <i class="fas fa-arrow-left mr-2"></i>
                 ড্যাশবোর্ডে ফিরে যান
@@ -197,25 +240,27 @@
         </div>
     </div>
 
+    <!-- অ্যাকশন মডাল -->
     <div id="proofActionModal" class="custom-modal">
         <div class="custom-modal-content">
-            <h3 class="text-xl font-bold mb-2 text-gray-800" id="action-title">অনুমোদন নিশ্চিত করুন</h3>
+            <h3 class="text-xl font-bold mb-2" id="action-title">অনুমোদন নিশ্চিত করুন</h3>
             <p class="text-gray-600 mb-4" id="action-message"></p>
             
             <div class="bg-gray-100 p-4 rounded-lg text-sm text-left mb-4">
-                <p class="font-bold text-gray-700">ব্যবহারকারী: <span id="modal-user-name"></span></p>
+                <p class="font-bold text-gray-700">টাস্ক ID: <span id="modal-task-id" class="text-indigo-600"></span></p>
+                <p class="font-bold text-gray-700">ইউজার: <span id="modal-user-name"></span></p>
                 <p class="font-bold text-gray-700">পয়েন্ট: <span id="modal-points"></span></p>
             </div>
             
-            <!-- 🔥 নতুন: বাতিলের কারণ ইনপুট (ডিফল্টরূপে লুকানো) -->
-            <div id="rejection-reason-group-owner" class="mb-4 hidden text-left">
-                <label for="rejection-reason-owner" class="block text-sm font-medium text-gray-700 mb-2">বাতিলের কারণ (আবশ্যক):</label>
-                <textarea id="rejection-reason-owner" rows="3" class="w-full p-3 border border-red-300 rounded-lg focus:ring-red-500 focus:border-red-500" placeholder="কেন প্রুফটি বাতিল করা হচ্ছে তার বিস্তারিত লিখুন..."></textarea>
+            <!-- রিপোর্টের কারণ ইনপুট গ্রূপ -->
+            <div id="reason-group" class="reason-group hidden">
+                <label for="reason-input" class="block text-sm font-medium text-gray-700 mb-2" id="reason-label">কারণ (আবশ্যক):</label>
+                <textarea id="reason-input" rows="3" class="w-full p-3 border border-yellow-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500" placeholder="কেন এই সাবমিশনটি মডারেটর রিভিউয়ের জন্য পাঠানো হচ্ছে? (যেমন: ভূয়া/ভুল টাস্ক প্রুফ)..."></textarea>
             </div>
-            
+            <!-- অ্যাকশন বাটন -->
             <div class="custom-modal-actions">
-                <button class="custom-modal-btn bg-green-500 text-white hover:bg-green-600" id="confirmActionButton">অনুমোদন</button>
-                <button class="custom-modal-btn bg-red-500 text-white hover:bg-red-600" id="rejectActionButton">বাতিল</button>
+                <button class="custom-modal-btn bg-green-500 text-white hover:bg-green-600" id="confirmApproveButton">অনুমোদন নিশ্চিত করুন</button>
+                <button class="custom-modal-btn bg-yellow-500 text-white hover:bg-yellow-600" id="confirmReportButton" style="display:none;">রিভিউয়ের জন্য পাঠান</button>
                 <button class="custom-modal-btn bg-gray-200 text-gray-800 hover:bg-gray-300" onclick="closeCustomModal()">ফিরে যান</button>
             </div>
         </div>
@@ -225,39 +270,30 @@
     
     <script type="module">
         // Firebase imports for Realtime Database
-        import { auth, rtdb, showNotification, set, ref, onValue, runTransaction, get, update } from "./rtdb-config.js";
+        import { auth, rtdb, showNotification, set, ref, onValue, runTransaction, get, update, query, orderByChild, equalTo } from "./rtdb-config.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
         
         // 🔥🔥🔥 মডারেটর/এডমিন লজিকের সাথে সামঞ্জস্যপূর্ণ ধ্রুবক (Constants) 🔥🔥🔥
-        const APPROVE_Trust_CHANGE = 5;  // অনুমোদনের জন্য +5
-        const REJECT_Trust_CHANGE = -10; // বাতিলের জন্য -10
-        const GENERIC_WARNING = "আপনি সঠিকভাবে কাজ করুন না হলে আপনার একাউন্ট বন্ধ করে দেওয়া হতে পারে।";
-        
-        // Trust Score অনুযায়ী সাসপেনশনের নিয়মাবলী (সর্বোচ্চ থেকে সর্বনিম্ন)
-        const SUSPENSION_RULES = [
-            { score: 40, durationMs: 24 * 60 * 60 * 1000, durationText: "২৪ ঘন্টা" },
-            { score: 50, durationMs: 3 * 60 * 60 * 1000, durationText: "৩ ঘন্টা" },
-            { score: 60, durationMs: 60 * 60 * 1000, durationText: "১ ঘন্টা" },
-            { score: 70, durationMs: 30 * 60 * 1000, durationText: "৩০ মিনিট" }
-        ];
+        const PROOF_APPROVE_SCORE_CHANGE = 5;  // অনুমোদনের জন্য +5
         // 🔥🔥🔥 ধ্রুবক শেষ 🔥🔥🔥
         
-        const proofsListDiv = document.getElementById('proofs-list');
-        const proofsHistoryListDiv = document.getElementById('proofs-history-list'); // 🔥 নতুন: হিস্ট্রি লিস্ট
+        const allTasksContainer = document.getElementById('all-tasks-container'); 
+        const noTasksFound = document.getElementById('no-tasks-found');
         const loadingOverlay = document.getElementById('loading-overlay');
         const mainContent = document.getElementById('main-content');
         
         const proofActionModal = document.getElementById('proofActionModal');
         const actionTitle = document.getElementById('action-title');
         const actionMessage = document.getElementById('action-message');
+        const modalTaskId = document.getElementById('modal-task-id');
         const modalUserName = document.getElementById('modal-user-name');
         const modalPoints = document.getElementById('modal-points');
-        const confirmActionButton = document.getElementById('confirmActionButton');
-        const rejectActionButton = document.getElementById('rejectActionButton');
         
-        // 🔥 নতুন DOM রেফারেন্স
-        const rejectionReasonGroup = document.getElementById('rejection-reason-group-owner');
-        const rejectionReasonInput = document.getElementById('rejection-reason-owner');
+        const confirmApproveButton = document.getElementById('confirmApproveButton');
+        const confirmReportButton = document.getElementById('confirmReportButton');
+        const reasonGroup = document.getElementById('reason-group'); 
+        const reasonLabel = document.getElementById('reason-label');
+        const reasonInput = document.getElementById('reason-input');
         
         let userId = null;
         let currentProofDetails = {};
@@ -275,80 +311,77 @@
             });
         };
 
+        // টাস্ক হেডার ক্লিক করলে প্রুফ তালিকা টগল করার ফাংশন
+        window.toggleProofList = (taskId) => {
+            const body = document.getElementById(`task-body-${taskId}`);
+            const icon = document.getElementById(`toggle-icon-${taskId}`);
+            
+            if (body.classList.contains('expanded')) {
+                body.classList.remove('expanded');
+                icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+            } else {
+                body.classList.add('expanded');
+                icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+            }
+        };
+
+
         // Custom Modal functions
-        // 🔥 আপডেট: মডাল খোলার ফাংশনটি সরল করা হলো
         window.openCustomModal = (action, proof) => {
+             // যেহেতু এখন টাস্ক আইডি সব সময় থাকবে, ডেমো চেক দরকার নেই
              currentProofDetails = proof;
-            
+                
             // মডাল UI রিসেট
-            confirmActionButton.style.display = 'block';
-            rejectActionButton.style.display = 'block';
-            rejectionReasonGroup.classList.add('hidden');
-            rejectionReasonInput.value = '';
+            confirmApproveButton.style.display = 'block';
+            confirmReportButton.style.display = 'none';
+            reasonGroup.classList.add('hidden');
+            reasonInput.value = '';
             
+            modalTaskId.textContent = proof.taskId;
             modalUserName.textContent = proof.facebookName || proof.userId;
             modalPoints.textContent = (proof.pointsPerTask || 0).toLocaleString('bn-BD');
             
             if (action === 'approve') {
                 actionTitle.textContent = 'অনুমোদন নিশ্চিত করুন';
-                actionMessage.textContent = `আপনি কি নিশ্চিত ${proof.facebookName || 'এই ব্যবহারকারী'} কে ${(proof.pointsPerTask || 0).toLocaleString('bn-BD')} পয়েন্ট দিতে চান?`;
+                actionMessage.textContent = `আপনি কি নিশ্চিত ${proof.facebookName || 'এই ব্যবহারকারী'} কে ${(proof.pointsPerTask || 0).toLocaleString('bn-BD')} পয়েন্ট দিতে এবং তার ট্রাস্ট স্কোর ${PROOF_APPROVE_SCORE_CHANGE} বৃদ্ধি করতে চান?`;
                 
-                // অনুমোদন বাটনকে চূড়ান্ত অ্যাকশন হিসাবে সেট করা
-                confirmActionButton.textContent = 'অনুমোদন';
-                confirmActionButton.classList.remove('bg-red-500', 'hover:bg-red-600');
-                confirmActionButton.classList.add('bg-green-500', 'hover:bg-green-600');
-                confirmActionButton.onclick = () => {
+                confirmApproveButton.style.display = 'block';
+                confirmApproveButton.onclick = () => {
                     closeCustomModal();
                     handleProof('approve', proof);
                 };
                 
-                // বাতিল বাটনকে রিজেকশন মোড ট্রিগার করতে সেট করা
-                rejectActionButton.textContent = 'বাতিল';
-                rejectActionButton.classList.remove('bg-green-500', 'hover:bg-green-600');
-                rejectActionButton.classList.add('bg-red-500', 'hover:bg-red-600');
-                rejectActionButton.onclick = () => {
-                    // দ্রুত মোড পরিবর্তন: বাতিল করার জন্য টেক্সট এরিয়া দেখানো
-                    enterRejectionReasonMode(proof);
+            } else if (action === 'report') { 
+                actionTitle.textContent = 'মডারেটর রিপোর্ট';
+                reasonLabel.textContent = 'মডারেটর রিপোর্টের কারণ (আবশ্যক):';
+                reasonInput.placeholder = 'কেন এই সাবমিশনটি মডারেটর রিভিউয়ের জন্য পাঠানো হচ্ছে? (যেমন: ভূয়া/ভুল টাস্ক প্রুফ)...';
+                actionMessage.textContent = `আপনি কি নিশ্চিত ${proof.facebookName || 'এই ব্যবহারকারী'} এর প্রুফটি মডারেটরের কাছে রিভিউয়ের জন্য পাঠাবেন? কারণ উল্লেখ করা আবশ্যক।`;
+                
+                confirmApproveButton.style.display = 'none'; 
+                confirmReportButton.style.display = 'block'; 
+                reasonGroup.classList.remove('hidden'); 
+                
+                confirmReportButton.onclick = () => {
+                    const reason = reasonInput.value.trim();
+                    if (!reason) {
+                        showNotification('রিভিউয়ের কারণ উল্লেখ করা আবশ্যক।', 'error');
+                        return;
+                    }
+                    closeCustomModal();
+                    handleProof('report', proof, reason);
                 };
-            } else if (action === 'reject') { 
-                // সরাসরি বাতিল বাটনে ক্লিক করলে
-                enterRejectionReasonMode(proof);
             }
+            // 'reject' অ্যাকশন লজিক এবং বাটন রিমুভ করা হয়েছে
             
             proofActionModal.style.display = 'flex';
         };
 
-        // 🔥 নতুন: বাতিলের কারণ ইনপুট মোডে পরিবর্তন করার ফাংশন
-        const enterRejectionReasonMode = (proof) => {
-            actionTitle.textContent = 'বাতিল কারণ দিন';
-            actionMessage.textContent = `আপনি কি নিশ্চিত ${proof.facebookName || 'এই ব্যবহারকারী'} এর প্রুফ বাতিল করবেন? বাতিলের কারণ উল্লেখ করুন।`;
-            
-            confirmActionButton.textContent = 'বাতিল করুন';
-            confirmActionButton.classList.remove('bg-green-500', 'hover:bg-green-600');
-            confirmActionButton.classList.add('bg-red-500', 'hover:bg-red-600');
-            rejectActionButton.style.display = 'none'; // আগের বাতিল বাটন হাইড
-            rejectionReasonGroup.classList.remove('hidden'); // কারণ ইনপুট দেখানো
-            
-            // নতুন কনফার্ম বাটন ক্লিক ইভেন্ট সেট করা (ফাইনাল রিজেক্ট অ্যাকশন)
-            confirmActionButton.onclick = () => {
-                const reason = rejectionReasonInput.value.trim();
-                if (!reason) {
-                    showNotification('বাতিল করার কারণ উল্লেখ করা আবশ্যক।', 'error');
-                    return;
-                }
-                closeCustomModal();
-                handleProof('reject', proof, reason);
-            };
-        }
-
 
         window.closeCustomModal = () => {
             proofActionModal.style.display = 'none';
-            // 🔥 নতুন: ইনপুট ক্লিয়ার করা
-            rejectionReasonInput.value = ''; 
-            // বাটনগুলো ডিফল্ট অবস্থায় ফিরিয়ে আনা (পরবর্তী কলের জন্য)
-            confirmActionButton.style.display = 'block';
-            rejectActionButton.style.display = 'block'; 
+            reasonInput.value = ''; 
+            confirmApproveButton.style.display = 'block';
+            confirmReportButton.style.display = 'none';
         };
         
         window.onclick = function(event) {
@@ -361,76 +394,135 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 userId = user.uid;
-                loadAndListenForProofs(); 
+                loadAllTasksAndProofs();
             } else {
                 window.location.href = 'login.html';
             }
         });
-
-        const loadAndListenForProofs = () => {
-            const params = new URLSearchParams(window.location.search);
-            const taskId = params.get('taskId');
+        
+        // সমস্ত টাস্ক এবং তাদের প্রুফ লোড করার জন্য নতুন ফাংশন
+        const loadAllTasksAndProofs = () => {
+            // Realtime DB query: ownerId = current userId এর সকল টাস্ক 
+            const tasksRef = query(ref(rtdb, 'tasks'), orderByChild('ownerId'), equalTo(userId));
             
-            if (!taskId) {
-                showNotification("ত্রুটি: টাস্ক আইডি পাওয়া যায়নি!", 'error');
-                // আপনার সাইটের মূল ড্যাশবোর্ডে ফিরে যান
-                window.location.href = 'index.html'; 
-                return;
-            }
-
-            const taskRef = ref(rtdb, `tasks/${taskId}`);
-            
-            onValue(taskRef, (taskSnapshot) => {
-                const taskData = taskSnapshot.val();
+            onValue(tasksRef, (snapshot) => {
+                const tasks = snapshot.val();
                 
-                if (!taskData) {
-                    proofsListDiv.innerHTML = '<p class="text-center text-gray-500 py-6">টাস্কটি আর বিদ্যমান নেই।</p>';
-                    proofsHistoryListDiv.innerHTML = '';
+                if (!tasks) {
+                    allTasksContainer.innerHTML = '';
+                    noTasksFound.classList.remove('hidden');
                     loadingOverlay.classList.add('hidden');
                     mainContent.classList.remove('hidden');
                     return;
                 }
                 
-                if (taskData.ownerId !== userId) {
-                    showNotification("অনুমতি নেই! আপনি এই টাস্কের মালিক নন।", 'error');
-                    window.location.href = 'index.html';
-                    return;
-                }
-                
-                const proofsObject = taskData.proofs || {};
-                displayProofs(proofsObject, taskData);
+                noTasksFound.classList.add('hidden');
+                displayAllTasksAndProofs(tasks);
                 
                 loadingOverlay.classList.add('hidden');
                 mainContent.classList.remove('hidden');
             });
         };
 
-        const displayProofs = (proofsObject, taskData) => {
-            proofsListDiv.innerHTML = '';
-            proofsHistoryListDiv.innerHTML = ''; // 🔥 নতুন: হিস্ট্রি লিস্ট পরিষ্কার করা
+        const displayAllTasksAndProofs = (tasksObject) => {
+            allTasksContainer.innerHTML = '';
+            
+            const taskIds = Object.keys(tasksObject).reverse(); // সর্বশেষ তৈরি টাস্ক আগে দেখানোর জন্য
+            
+            taskIds.forEach(taskId => {
+                const taskData = tasksObject[taskId];
+                const proofsObject = taskData.proofs || {};
+                
+                const proofsArray = Object.keys(proofsObject).map(key => ({ 
+                    id: key, 
+                    taskId: taskId,
+                    pointsPerTask: taskData.pointsPerTask,
+                    ...proofsObject[key] 
+                }));
+                
+                // প্রুফগুলোকে স্ট্যাটাস অনুযায়ী ভাগ করা
+                const pendingProofs = []; 
+                const historyProofs = [];       // অনুমোদিত বা রিপোর্টকৃত
 
-            const proofsArray = Object.keys(proofsObject).map(key => ({ 
-                id: key, 
-                taskId: taskData.id,
-                pointsPerTask: taskData.pointsPerTask,
-                ...proofsObject[key] 
-            }));
+                proofsArray.forEach(proof => {
+                    // শুধুমাত্র approved/reported স্ট্যাটাস বিবেচনা করা হচ্ছে (rejected সরানো হলো)
+                    if (proof.status === 'pending') {
+                        pendingProofs.push(proof);
+                    } else if (proof.status === 'approved' || proof.status === 'reported') { // 'rejected' স্ট্যাটাস সরানো হলো
+                        historyProofs.push(proof);
+                    }
+                });
+                
+                historyProofs.sort((a, b) => b.submittedAt - a.submittedAt);
+                
+                const totalPending = pendingProofs.length;
+                const totalReviewed = historyProofs.length;
+                
+                // --- টাস্ক কন্টেইনার তৈরি ---
+                const taskContainer = document.createElement('div');
+                taskContainer.className = 'task-container';
+                
+                const headerClass = totalPending > 0 ? 'bg-red-500 hover:bg-red-600' : 'bg-green-600 hover:bg-green-700';
+                
+                taskContainer.innerHTML = `
+                    <div class="task-header ${headerClass}" onclick="toggleProofList('${taskId}')">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-clipboard-list"></i>
+                            <span>${taskData.title || 'শিরোনামহীন টাস্ক'}</span>
+                        </div>
+                        <div class="flex items-center gap-4 text-sm font-normal">
+                            ${totalPending > 0 ? 
+                                `<span class="bg-white text-red-600 font-bold px-3 py-1 rounded-full shadow-lg">${totalPending} অপেক্ষারত</span>` : 
+                                `<span class="bg-white text-green-600 font-bold px-3 py-1 rounded-full shadow-lg"><i class="fas fa-check"></i> সব যাচাই হয়েছে</span>`
+                            }
+                            <i id="toggle-icon-${taskId}" class="fas fa-chevron-down transition-transform duration-300"></i>
+                        </div>
+                    </div>
+                    
+                    <div id="task-body-${taskId}" class="task-body proofs-list-accordion">
+                        <h3 class="text-xl font-bold text-gray-700 mb-4 border-b pb-2">
+                             অপেক্ষারত প্রুফ
+                        </h3>
+                        <div id="pending-proofs-list-${taskId}" class="space-y-4">
+                            <!-- Pending proofs for this task -->
+                        </div>
+
+                        <h3 class="text-xl font-bold text-gray-700 mt-8 mb-4 border-b pb-2">
+                            প্রুফ হিস্ট্রি (${totalReviewed}টি)
+                        </h3>
+                        <div id="history-proofs-list-${taskId}" class="space-y-4">
+                            <!-- History proofs for this task -->
+                        </div>
+                    </div>
+                `;
+                
+                allTasksContainer.appendChild(taskContainer);
+                
+                // প্রুফ রেন্ডারিং লজিক
+                renderProofs(taskId, pendingProofs, historyProofs);
+                
+                // যদি পেন্ডিং প্রুফ থাকে, টাস্কটি স্বয়ংক্রিয়ভাবে এক্সপ্যান্ড করা
+                if (totalPending > 0) {
+                     toggleProofList(taskId);
+                }
+            });
+
+            if (taskIds.length === 0) {
+                 noTasksFound.classList.remove('hidden');
+            }
+        };
+
+        const renderProofs = (taskId, pendingProofs, historyProofs) => {
+            const pendingListDiv = document.getElementById(`pending-proofs-list-${taskId}`);
+            const historyListDiv = document.getElementById(`history-proofs-list-${taskId}`);
             
-            // প্রুফগুলোকে স্ট্যাটাস অনুযায়ী ভাগ করা
-            const pendingProofs = proofsArray.filter(proof => proof.status === 'pending');
-            const historyProofs = proofsArray.filter(proof => proof.status === 'approved' || proof.status === 'rejected');
-            
-            // হিস্ট্রি প্রুফগুলোকে সময় অনুসারে সাজানো (নতুন থেকে পুরানো)
-            historyProofs.sort((a, b) => b.submittedAt - a.submittedAt);
-            
-            
-            // --- ১. পেন্ডিং প্রুফ রেন্ডার করা ---
+            // --- ১. স্বাভাবিক পেন্ডিং প্রুফ রেন্ডার করা (অ্যাকশন বাটন সহ) ---
             if (pendingProofs.length === 0) {
-                proofsListDiv.innerHTML = '<p class="text-center text-gray-500 py-6">এই কাজের জন্য কোনো নতুন প্রুফ জমা পড়েনি।</p>';
+                pendingListDiv.innerHTML = '<p class="text-center text-gray-500 py-4 border border-dashed rounded-lg">এই কাজের জন্য কোনো নতুন প্রুফ জমা পড়েনি।</p>';
             } else {
                 pendingProofs.forEach(proof => {
                     const proofItem = document.createElement('div');
-                    proofItem.className = 'proof-item app-card flex-col md:flex-row';
+                    proofItem.className = 'proof-item app-card flex-col md:flex-row'; 
                     
                     const proofJson = JSON.stringify(proof).replace(/"/g, '&quot;'); 
                     
@@ -457,6 +549,7 @@
                                         <span class="font-medium text-gray-700 block mb-2"><i class="fas fa-image text-green-500 mr-2"></i> স্ক্রিনশট প্রুফ:</span>
                                         <img src="${proof.screenshotUrl}" alt="স্ক্রিনশট প্রুফ" 
                                              class="w-full h-auto max-h-48 object-contain rounded-lg border border-gray-200 cursor-pointer"
+                                             onerror="this.onerror=null; this.src='https://placehold.co/300x200/cccccc/333333?text=ছবি+পাওয়া+যায়নি';"
                                              onclick="window.open('${proof.screenshotUrl}', '_blank')" />
                                     </div>
                                 ` : (proof.facebookLink ? `<p class="text-xs text-red-500 italic">পুরোনো প্রুফ ডেটা, শুধুমাত্র ফেসবুক লিংক আছে: <a href="${proof.facebookLink}" target="_blank" class="text-blue-500">দেখুন</a></p>` : '')}
@@ -465,27 +558,47 @@
                         </div>
                         
                         <div class="flex flex-col gap-2 md:w-40 mt-4 md:mt-0">
+                            <!-- শুধু অনুমোদন এবং রিপোর্ট বাটন থাকবে -->
                             <button class="bg-green-500 text-white font-bold py-2.5 rounded-lg hover:bg-green-600 transition" onclick="openCustomModal('approve', ${proofJson})">
                                 <i class="fas fa-check-circle mr-2"></i> অনুমোদন
                             </button>
-                            <button class="bg-red-500 text-white font-bold py-2.5 rounded-lg hover:bg-red-600 transition" onclick="openCustomModal('reject', ${proofJson})">
-                                <i class="fas fa-times-circle mr-2"></i> বাতিল
+                            <button class="bg-yellow-500 text-white font-bold py-2.5 rounded-lg hover:bg-yellow-600 transition" onclick="openCustomModal('report', ${proofJson})">
+                                <i class="fas fa-flag mr-2"></i> রিভিউয়ের জন্য পাঠান
                             </button>
+                            <!-- রিজেক্ট বাটন সরানো হলো -->
                         </div>
                     `;
-                    proofsListDiv.appendChild(proofItem);
+                    pendingListDiv.appendChild(proofItem);
                 });
             }
             
             // --- ২. প্রুফ হিস্ট্রি রেন্ডার করা ---
             if (historyProofs.length === 0) {
-                proofsHistoryListDiv.innerHTML = '<p class="text-center text-gray-500 py-6">এখনো কোনো প্রুফ অনুমোদন বা বাতিল করা হয়নি।</p>';
+                pendingListDiv.innerHTML += '<p class="text-center text-gray-500 py-4 border border-dashed rounded-lg">এই কাজের জন্য কোনো নতুন প্রুফ জমা পড়েনি।</p>';
+                historyListDiv.innerHTML = '<p class="text-center text-gray-500 py-4 border border-dashed rounded-lg">এখনো কোনো প্রুফ অনুমোদন বা রিপোর্ট করা হয়নি।</p>'; // টেক্সট আপডেট করা হলো
             } else {
+                historyListDiv.innerHTML = ''; // Ensure it's cleared before rendering
                 historyProofs.forEach(proof => {
-                    const isApproved = proof.status === 'approved';
-                    const colorClass = isApproved ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50';
-                    const statusText = isApproved ? 'অনুমোদিত' : 'বাতিলকৃত';
-                    const iconClass = isApproved ? 'fa-check-circle text-green-500' : 'fa-times-circle text-red-500';
+                    let colorClass, statusText, iconClass, reasonDisplay = '';
+                    
+                    if (proof.status === 'approved') {
+                        colorClass = 'border-green-500 bg-green-50';
+                        statusText = 'অনুমোদিত';
+                        iconClass = 'fa-check-circle text-green-500';
+                    } else if (proof.status === 'reported') { 
+                         colorClass = 'border-yellow-500 bg-yellow-50';
+                         statusText = 'মডারেটর রিপোর্ট';
+                         iconClass = 'fa-flag text-yellow-500';
+                         if (proof.reportReason) {
+                             reasonDisplay = `<div class="mt-2 text-xs p-2 bg-yellow-100 rounded-lg border border-yellow-200 text-yellow-700">
+                                <strong>রিপোর্টের কারণ:</strong> ${proof.reportReason}
+                            </div>`;
+                        }
+                    } 
+                    // 'rejected' স্ট্যাটাস হ্যান্ডলিং সরানো হলো
+                    
+                    const pointsDisplay = proof.status === 'approved' ? `+${(proof.pointsPerTask).toLocaleString('bn-BD')}` : '০';
+                    const pointColorClass = proof.status === 'approved' ? 'text-green-600' : 'text-gray-600';
                     
                     const historyItem = document.createElement('div');
                     historyItem.className = `history-item ${colorClass}`;
@@ -496,19 +609,14 @@
                                 <i class="fas ${iconClass} text-xl"></i>
                                 <div>
                                     <p class="font-bold text-gray-800">${proof.facebookName || 'অজানা ব্যবহারকারী'}</p>
-                                    <p class="text-sm text-gray-600">${statusText} - ${formatDate(proof.reviewedAt)}</p>
+                                    <p class="text-sm text-gray-600">${statusText} - ${formatDate(proof.reviewedAt || proof.reportedAt)}</p>
                                 </div>
                             </div>
-                            <span class="font-extrabold text-sm ${isApproved ? 'text-green-600' : 'text-red-600'}">
-                                ${isApproved ? `+${(proof.pointsPerTask).toLocaleString('bn-BD')}` : '০'} পয়েন্ট
+                            <span class="font-extrabold text-sm ${pointColorClass}">
+                                ${pointsDisplay} পয়েন্ট
                             </span>
                         </div>
-                        ${!isApproved && proof.rejectionReason ? 
-                            `<div class="mt-2 text-xs p-2 bg-red-100 rounded-lg border border-red-200 text-red-700">
-                                <strong>কারণ:</strong> ${proof.rejectionReason}
-                            </div>` 
-                            : ''
-                        }
+                        ${reasonDisplay}
                         <div class="mt-3 pt-3 border-t border-gray-200">
                             <a href="${proof.screenshotUrl || proof.facebookLink}" target="_blank" 
                                 class="brand-blue-text hover:underline text-xs flex items-center">
@@ -516,165 +624,118 @@
                             </a>
                         </div>
                     `;
-                    proofsHistoryListDiv.appendChild(historyItem);
+                    historyListDiv.appendChild(historyItem);
                 });
             }
         };
 
         
         // =========================================================================
-        // 🔥🔥 আপডেটেড সাসপেনশন লজিক (users/{uid}/suspension পাথে সেভ হবে) 🔥🔥
-        // applySuspension ফাংশনটি মুছে handleProof এর মধ্যে লজিক সরাসরি ব্যবহার করা হলো।
+        // 🔥🔥 handleProof ফাংশন (Approve এবং Report লজিক) 🔥🔥
         // =========================================================================
 
-
-        // 🔥 আপডেট: বাতিলের কারণসহ handleProof ফাংশন এবং TrustScore যুক্ত করা হয়েছে
-        window.handleProof = async (action, proof, rejectionReason = null) => {
-            const proofRef = ref(rtdb, `tasks/${proof.taskId}/proofs/${proof.id}`);
-            const userRef = ref(rtdb, `users/${proof.userId}`);
-            const taskRef = ref(rtdb, `tasks/${proof.taskId}`);
-            const points = proof.pointsPerTask || 0;
+        window.handleProof = async (action, proof, reason = null) => {
+             const proofRef = ref(rtdb, `tasks/${proof.taskId}/proofs/${proof.id}`);
+             const userRef = ref(rtdb, `users/${proof.userId}`);
+             const taskRef = ref(rtdb, `tasks/${proof.taskId}`);
+             const points = proof.pointsPerTask || 0;
             
-            showNotification("প্রক্রিয়াকরণ চলছে...", 'info');
+             showNotification("প্রক্রিয়াকরণ চলছে...", 'info');
 
-            try {
+             try {
                 const snapshot = await get(proofRef);
                 const currentProof = snapshot.val();
+                
+                // প্রুফটি পেন্ডিং স্ট্যাটাসে না থাকলে অ্যাকশন ব্লক করা
                 if (!currentProof || currentProof.status !== 'pending') {
                     showNotification('এই প্রুফটি ইতিমধ্যেই প্রক্রিয়া করা হয়েছে।', 'error');
                     return;
                 }
-
-                // ১. প্রুফের স্ট্যাটাস আপডেট করা। reviewedBy: userId (Task Owner) নিশ্চিত করা হলো।
-                const updateData = { 
-                    status: action === 'approve' ? 'approved' : 'rejected', 
-                    reviewedBy: userId, 
-                    reviewedAt: Date.now() 
-                };
                 
-                if (action === 'reject' && rejectionReason) {
-                     updateData.rejectionReason = rejectionReason; // 🔥 বাতিলের কারণ যুক্ত করা হলো
-                }
+                // --- ১. মডারেটর রিপোর্ট অ্যাকশন ---
+                if (action === 'report') {
+                    if (!reason) { // রিপোর্টের জন্য কারণ আবশ্যক
+                         showNotification(`প্রুফ রিপোর্টের জন্য কারণ উল্লেখ করা আবশ্যক।`, 'error');
+                         return;
+                    }
+                    
+                    const updateData = { 
+                        status: 'reported', // শুধুমাত্র 'reported' স্ট্যাটাস থাকবে
+                        reportedBy: userId, 
+                        reportedAt: Date.now(),
+                        reportReason: reason // রিপোর্টের কারণ এখানে সেভ করা হচ্ছে
+                    };
+                    
+                    await update(proofRef, updateData);
+                    
+                    showNotification(`প্রুফটি সফলভাবে রিভিউয়ের জন্য পাঠানো হয়েছে। টাস্ক: ${proof.taskId}`, 'success');
+                    return; 
+                } 
+                // 'reject' অ্যাকশন লজিক সম্পূর্ণরূপে সরানো হলো
                 
-                await update(proofRef, updateData);
+                // --- ২. অনুমোদন (Approve) অ্যাকশন ---
+                else if (action === 'approve') {
+                    
+                    const newStatus = 'approved';
+                    const scoreChange = PROOF_APPROVE_SCORE_CHANGE; // ট্রাস্ট স্কোর পরিবর্তনের ধ্রুবক
 
-                // ২. ইউজারের পয়েন্ট, স্ট্যাটাস এবং TrustScore আপডেট করা (ট্রানজেকশন ব্যবহার করে)
-                let finalTrustScore = 0;
-                let suspensionDurationText = GENERIC_WARNING;
-                let suspensionDataToSet = null; // সাসপেনশন ডেটা ট্রানজেকশনের শেষে সেট করার জন্য
-
-                const userUpdatePromise = runTransaction(userRef, (currentData) => {
-                    if (currentData) {
-                        currentData.completedTasks = currentData.completedTasks || {};
-                        
-                        const currentTrustScore = currentData.trustScore || 0;
-                        let newTrustScore = currentTrustScore; 
-                        
-                        // সাসপেনশন ডেটার জন্য ডিফল্ট ভ্যালু তৈরি করা
-                        const currentSuspensionUntil = currentData.suspension?.suspendUntil || 0;
-                        
-                        if (action === 'approve') {
+                    const updateData = { 
+                        status: newStatus, 
+                        reviewedBy: userId, 
+                        reviewedAt: Date.now(),
+                    };
+                    
+                    await update(proofRef, updateData);
+                    
+                    // ইউজার ডেটা ট্রানজেকশন: পয়েন্ট ও ট্রাস্ট স্কোর আপডেট
+                    const userUpdatePromise = runTransaction(userRef, (currentData) => {
+                        if (currentData) {
+                            currentData.completedTasks = currentData.completedTasks || {};
+                            
+                            let newTrustScore = currentData.trustScore || 0; 
+                            
+                            // ট্রাস্ট স্কোর আপডেট
+                            newTrustScore += scoreChange; 
+                            currentData.trustScore = Math.min(100, Math.max(0, newTrustScore)); // 0 থেকে 100 এর মধ্যে সীমিত
+                            
+                            // অনুমোদনের জন্য পয়েন্ট ও টাস্ক কাউন্ট বাড়ানো
                             currentData.points = (currentData.points || 0) + points;
                             currentData.tasksCompleted = (currentData.tasksCompleted || 0) + 1;
                             currentData.completedTasks[proof.taskId] = 'approved';
                             
-                            // 🔥 TrustScore আপডেট: অনুমোদন (+5)
-                            newTrustScore += APPROVE_Trust_CHANGE; 
+                            // সাসপেনশন লজিক সম্পূর্ণরূপে বাদ দেওয়া হয়েছে
                             
-                            // অনুমোদনের ক্ষেত্রে মেয়াদোত্তীর্ণ সাসপেনশন থাকলে তা ক্লিয়ার করা
-                            if (currentData.suspension && currentData.suspension.suspendUntil && currentData.suspension.suspendUntil < Date.now()) {
-                                currentData.suspension = null; 
-                            }
-                        } else {
-                            // বাতিলের ক্ষেত্রে: rejected count বাড়ানো
-                            currentData.tasksRejected = (currentData.tasksRejected || 0) + 1;
-                            delete currentData.completedTasks[proof.taskId]; 
-                            
-                            // 🔥 TrustScore আপডেট: বাতিল (-10)
-                            newTrustScore += REJECT_Trust_CHANGE;
-                            
-                            // 🔥 সাসপেনশন লজিক প্রয়োগ (রিজেকশনের ক্ষেত্রে)
-                            let suspendMinutes = 0;
-                            let suspensionTextLocal = null;
-
-                            for (const rule of SUSPENSION_RULES) {
-                                if (newTrustScore <= rule.score) {
-                                    if (rule.durationMs > suspendMinutes * 60 * 1000) {
-                                        suspendMinutes = rule.durationMs / (60 * 1000); 
-                                        suspensionTextLocal = rule.durationText;
-                                    }
-                                }
-                            }
-                            
-                            if (suspendMinutes > 0) {
-                                const suspensionEndTime = Date.now() + (suspendMinutes * 60 * 1000);
-                                
-                                // যদি নতুন সাসপেনশন আগের চেয়ে লম্বা হয়, তবে আপডেট করা
-                                if (suspensionEndTime > currentSuspensionUntil) {
-                                    const reasonMessage = `ট্রাস্ট স্কোর ${newTrustScore} এ পৌঁছানোয় ${suspensionTextLocal} এর জন্য সাসপেনশন।`;
-                                    
-                                    // সাসপেনশন ডেটা তৈরি
-                                    suspensionDataToSet = {
-                                        suspended: true,
-                                        suspendUntil: suspensionEndTime,
-                                        reason: reasonMessage,
-                                        issuedBy: userId, 
-                                        issuedAt: Date.now()
-                                    };
-                                    
-                                    // ট্রানজেকশনের বাইরে নোটিফিকেশনের জন্য সাসপেনশন টেক্সট আপডেট
-                                    suspensionDurationText = suspensionTextLocal;
-                                    
-                                    // 🔥 সাসপেনশন অবজেক্ট সরাসরি ইউজার ডেটার মধ্যে আপডেট
-                                    currentData.suspension = suspensionDataToSet;
-                                }
-                            }
+                            return currentData;
                         }
-
-                        // 🔥 গুরুত্বপূর্ণ ফিক্স: TrustScore কে ০ থেকে ১০০ এর মধ্যে সীমাবদ্ধ করা
-                        currentData.trustScore = Math.min(100, Math.max(0, newTrustScore)); 
-                        
                         return currentData;
-                    }
-                    return currentData;
-                });
-                
-                // ৩. টাস্কের completedCount আপডেট করা (শুধুমাত্র অনুমোদনের ক্ষেত্রে)
-                const taskUpdatePromise = runTransaction(taskRef, (currentData) => {
-                    if (currentData && action === 'approve') {
-                        currentData.completedCount = (currentData.completedCount || 0) + 1;
-                        if (currentData.quantity && currentData.completedCount >= currentData.quantity) {
-                            currentData.status = 'completed';
-                        }
-                    }
-                    return currentData;
-                });
-                
-                const [userResult, taskResult] = await Promise.all([userUpdatePromise, taskUpdatePromise]);
-                
-                if (userResult.committed && taskResult.committed) {
-                    const finalUserData = userResult.snapshot.val();
-                    finalTrustScore = finalUserData.trustScore; 
-                    let notificationMessage = '';
+                    });
                     
-                    if (action === 'approve') {
-                        notificationMessage = `প্রুফ অনুমোদিত হয়েছে এবং ইউজার এর ক্রেডিবিলিটি স্কোর (+${APPROVE_Trust_CHANGE}) আপডেট করা হয়েছে! নতুন স্কোর: ${finalTrustScore}`;
-                        showNotification(notificationMessage, 'success');
-                    } else {
-                        // রিজেকশনের ফলাফল নোটিফিকেশন
-                        notificationMessage = `প্রুফ বাতিল হওয়ায় ইউজার এর ক্রেডিবিলিটি স্কোর (${REJECT_Trust_CHANGE}) আপডেট করা হয়েছে। নতুন স্কোর: ${finalTrustScore}।`;
-                        
-                        if (finalUserData.suspension && finalUserData.suspension.suspended) {
-                            // সাসপেনশন হয়েছে
-                            notificationMessage += ` **ইউজারকে ${suspensionDurationText} এর জন্য সাসপেন্ড করা হয়েছে।**`;
-                        } else {
-                            // সাসপেনশন হয়নি, শুধু সতর্কতা
-                            notificationMessage += ` **সাধারণ সতর্কতা পাঠানো হয়েছে: "${GENERIC_WARNING}"**`;
+                    // টাস্ক ডেটা ট্রানজেকশন 
+                    const taskUpdatePromise = runTransaction(taskRef, (currentData) => {
+                        if (currentData) {
+                            currentData.completedCount = (currentData.completedCount || 0) + 1;
+                            if (currentData.quantity && currentData.completedCount >= currentData.quantity) {
+                                currentData.status = 'completed';
+                            }
                         }
-                        showNotification(notificationMessage, 'error'); 
+                        return currentData;
+                    }); 
+                    
+                    const [userResult, taskResult] = await Promise.all([userUpdatePromise, taskUpdatePromise]);
+                    
+                    if (userResult.committed && taskResult.committed) {
+                        const finalUserData = userResult.snapshot.val();
+                        const finalTrustScore = finalUserData.trustScore; 
+                        
+                        const notificationMessage = `প্রুফ অনুমোদিত হয়েছে! ইউজার ট্রাস্ট স্কোর (+${PROOF_APPROVE_SCORE_CHANGE}) আপডেট করা হয়েছে। নতুন স্কোর: ${finalTrustScore.toFixed(0)}`;
+                        
+                        showNotification(notificationMessage, 'success');
+                        
+                    } else {
+                        throw new Error("Transaction failed.");
                     }
                 } else {
-                    throw new Error("Transaction failed.");
+                    showNotification(`ত্রুটি: অবৈধ অ্যাকশন অনুরোধ!`, 'error');
                 }
                 
             } catch (error) {
