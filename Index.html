@@ -7,12 +7,12 @@
             // এরর মেসেজ বক্সটি খুঁজে বের করা
             var errorBox = document.getElementById('errorDisplay');
             
-            // যদি বক্সটি পাওয়া যায় (DOM লোড হওয়ার পর)
+            // যদি বক্সটি পাওয়া যায় (DOM লোড হওয়ার পর)
             if (errorBox) {
                 errorBox.style.display = 'block'; // বক্সটি দৃশ্যমান করা
                 errorBox.innerHTML = "⚠️ Error: " + message + "<br>Line: " + lineno;
             } else {
-                // যদি বক্স না পাওয়া যায় (খুব আর্লি এরর), তবে ডকুমেন্ট লোড হলে দেখাবে
+                // যদি বক্স না পাওয়া যায় (খুব আর্লি এরর), তবে ডকুমেন্ট লোড হলে দেখাবে
                 window.addEventListener('DOMContentLoaded', function() {
                     var box = document.getElementById('errorDisplay');
                     if(box) {
@@ -44,11 +44,11 @@
             </div>
             <div id="activePowerUps"></div>
         </div>
-        <div id="teamScoreBoard" style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 300px; height: 30px; background: rgba(0,0,0,0.5); border-radius: 15px; overflow: hidden; display: none; border: 2px solid white; box-shadow: 0 0 15px rgba(255,255,255,0.2);">
-    <div id="redScoreBar" style="width: 50%; height: 100%; background: #ff1744; float: left; transition: width 0.5s;"></div>
-    <div id="greenScoreBar" style="width: 50%; height: 100%; background: #00e676; float: right; transition: width 0.5s;"></div>
-    <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-weight: bold; font-size: 14px; text-shadow: 0 0 3px black;">TEAM BATTLE</span>
-</div>
+        <div id="teamScoreBoard" style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 300px; height: 30px; background: rgba(0,0,0,0.5); border-radius: 15px; overflow: hidden; display: none;">
+            <div id="redScoreBar" style="width: 50%; height: 100%; background: #ff1744; float: left; transition: width 0.5s;"></div>
+            <div id="greenScoreBar" style="width: 50%; height: 100%; background: #00e676; float: right; transition: width 0.5s;"></div>
+            <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-weight: bold; font-size: 14px; text-shadow: 0 0 3px black;">TEAM BATTLE</span>
+        </div>
 
         <div id="zoneStatus" style="position: absolute; top: 100px; left: 50%; transform: translateX(-50%); color: #ff1744; font-weight: bold; font-size: 18px; text-shadow: 0 0 10px red; display: none;">
             🔥 ZONE SHRINKING 🔥
@@ -63,26 +63,26 @@
 
         <canvas id="miniMap" width="150" height="150"></canvas>
         <div id="healthContainer">
-    <div style="display: flex; justify-content: space-between; color: #fff; font-size: 10px; font-weight: bold; margin-bottom: 2px;">
-        <span>❤️ HP</span>
-        <span id="healthText">100%</span>
-    </div>
-    <div id="healthBarWrapper">
-        <div id="healthBar"></div>
-    </div>
-</div>
+            <div style="display: flex; justify-content: space-between; color: #fff; font-size: 10px; font-weight: bold; margin-bottom: 2px;">
+                <span>❤️ HP</span>
+                <span id="healthText">100%</span>
+            </div>
+            <div id="healthBarWrapper">
+                <div id="healthBar"></div>
+            </div>
+        </div>
 
-<div id="staminaContainer">
-    <div style="display: flex; justify-content: space-between; color: #fff; font-size: 10px; font-weight: bold; margin-bottom: 2px;">
-        <span>⚡ ENERGY</span>
-        <span id="staminaText">100%</span>
-    </div>
-    <div id="staminaBarWrapper">
-        <div id="staminaBar"></div>
-    </div>
-</div>
+        <div id="staminaContainer">
+            <div style="display: flex; justify-content: space-between; color: #fff; font-size: 10px; font-weight: bold; margin-bottom: 2px;">
+                <span>⚡ ENERGY</span>
+                <span id="staminaText">100%</span>
+            </div>
+            <div id="staminaBarWrapper">
+                <div id="staminaBar"></div>
+            </div>
+        </div>
 
-        <div id="protectionText">সুরক্ষা বলয় সক্রিয়!</div>
+        <div id="protectionText">সুরক্ষা বলয় সক্রিয়!</div>
         
         <div id="controls"><div id="boostBtn">⚡</div></div>
 
@@ -111,20 +111,20 @@
             <h1 class="title-text">SNAKE <span>WAR</span></h1>
             <div class="subtitle">Ultimate Survival Area</div>
             
-<div class="input-group">
-    <input type="text" id="playerNameInput" placeholder="ENTER NAME" maxlength="12">
-    <div id="errorDisplay" class="error-msg"></div> 
-</div>
+            <div class="input-group">
+                <input type="text" id="playerNameInput" placeholder="ENTER NAME" maxlength="12">
+                <div id="errorDisplay" class="error-msg"></div> 
+            </div>
 
-<div class="level-container" style="margin-bottom: 20px; width: 100%;">
-    <div style="display: flex; justify-content: space-between; color: #bbb; font-size: 12px; margin-bottom: 5px;">
-        <span id="playerLevelDisplay">LEVEL 1</span>
-        <span id="playerXPDisplay">0 / 500 XP</span>
-    </div>
-    <div style="width: 100%; height: 8px; background: #333; border-radius: 10px; overflow: hidden; border: 1px solid #555;">
-        <div id="xpProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #00e676, #00c853); transition: width 0.5s;"></div>
-    </div>
-</div>
+            <div class="level-container" style="margin-bottom: 20px; width: 100%;">
+                <div style="display: flex; justify-content: space-between; color: #bbb; font-size: 12px; margin-bottom: 5px;">
+                    <span id="playerLevelDisplay">LEVEL 1</span>
+                    <span id="playerXPDisplay">0 / 500 XP</span>
+                </div>
+                <div style="width: 100%; height: 8px; background: #333; border-radius: 10px; overflow: hidden; border: 1px solid #555;">
+                    <div id="xpProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #00e676, #00c853); transition: width 0.5s;"></div>
+                </div>
+            </div>
 
             <div style="margin-bottom: 20px;">
                 <div class="skin-label">Current Skin</div>
@@ -133,14 +133,17 @@
 
             <div class="skin-label" style="margin-top: 15px;">SELECT MAP</div>
             <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 25px;">
-                <div id="btnClassic" onclick="selectMap('classic')" style="padding: 10px 20px; background: rgba(0, 230, 118, 0.2); border: 1px solid #00e676; border-radius: 8px; color: white; cursor: pointer; text-transform: uppercase;">Classic</div>
-                <div id="btnCyber" onclick="selectMap('cyber')" style="padding: 10px 20px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #888; cursor: pointer; text-transform: uppercase;">Battle Royale</div>
+                <div id="btnClassic" onclick="selectMap('classic')" style="padding: 10px 20px; background: rgba(0, 230, 118, 0.2); border: 1px solid #00e676; border-radius: 8px; color: white; cursor: pointer; font-weight: bold;">
+                    🌍 Classic
+                </div>
+                <div id="btnCyber" onclick="selectMap('cyber')" style="padding: 10px 20px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: white; cursor: pointer; font-weight: bold;">
+                    🔥 Cyber
+                </div>
             </div>
 
-<div id="btnTeam" onclick="selectMap('team')" style="padding: 10px 20px; background: linear-gradient(90deg, #ff1744 50%, #00e676 50%); border: 1px solid #fff; border-radius: 8px; color: white; cursor: pointer; text-transform: uppercase; font-weight: bold; text-shadow: 0 0 5px black;">
-    🔴 VS 🟢
-</div>
-
+            <div id="btnTeam" onclick="selectMap('team')" style="padding: 10px 20px; background: linear-gradient(90deg, #ff1744 50%, #00e676 50%); border: 1px solid #fff; border-radius: 8px; color: white; cursor: pointer; font-weight: bold; margin-bottom: 25px;">
+                🔴 VS 🟢
+            </div>
 
             <button class="menu-btn play-btn" onclick="startGame()">
                 <span>যুদ্ধ শুরু করুন ▶</span>
@@ -231,27 +234,27 @@
         </div>
     </div> 
 
-<div id="reviveScreen" class="hidden" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); padding: 40px; border-radius: 20px; text-align: center; border: 2px solid #00e676; box-shadow: 0 0 50px rgba(0, 230, 118, 0.3); z-index: 200; width: 300px;">
-    <h1 style="color: white; margin-bottom: 10px; font-size: 28px;">YOU DIED!</h1>
-    <p style="color: #bbb; margin-bottom: 20px;">আপনার স্কোর এবং সাইজ ধরে রাখতে চান?</p>
-    
-    <div style="font-size: 40px; margin-bottom: 20px;">⏳ <span id="reviveTimer" style="color: #ff1744; font-weight: bold;">5</span></div>
+    <div id="reviveScreen" class="hidden" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); padding: 40px; border-radius: 20px; text-align: center; z-index: 100; border: 2px solid #ff1744;">
+        <h1 style="color: white; margin-bottom: 10px; font-size: 28px;">YOU DIED!</h1>
+        <p style="color: #bbb; margin-bottom: 20px;">আপনার স্কোর এবং সাইজ ধরে রাখতে চান?</p>
+        
+        <div style="font-size: 40px; margin-bottom: 20px;">⏳ <span id="reviveTimer" style="color: #ff1744; font-weight: bold;">5</span></div>
 
-    <button onclick="useRevive()" style="background: linear-gradient(90deg, #ffea00, #ffd600); border: none; padding: 15px 30px; border-radius: 50px; font-weight: bold; font-size: 18px; cursor: pointer; width: 100%; margin-bottom: 10px;">
-        রিভাইভ করুন (২০০ 💰)
-    </button>
-    
-    <button onclick="cancelRevive()" style="background: transparent; border: 2px solid #555; color: #aaa; padding: 10px 20px; border-radius: 50px; cursor: pointer; width: 100%;">
-        না, গেম শেষ করুন
-    </button>
-</div>
-
+        <button onclick="useRevive()" style="background: linear-gradient(90deg, #ffea00, #ffd600); border: none; padding: 15px 30px; border-radius: 50px; font-weight: bold; font-size: 18px; cursor: pointer; width: 100%; margin-bottom: 10px;">
+            রিভাইভ করুন (২০০ 💰)
+        </button>
+        
+        <button onclick="cancelRevive()" style="background: transparent; border: 2px solid #555; color: #aaa; padding: 10px 20px; border-radius: 50px; cursor: pointer; width: 100%;">
+            না, গেম শেষ করুন
+        </button>
+    </div>
 
     <div id="gameOverScreen" class="hidden">
         <h1 style="color: #ff1744; font-size: 3em; text-shadow: 0 0 20px #ff0000;">গেম ওভার!</h1>
         <div style="font-size: 1.5em; margin: 20px 0;">
             আপনার স্কোর: <span id="finalScore" style="color: #ffea00;">0</span>
         </div>
+        <div id="spectatingMsg" style="display: none; color: #00e676; font-size: 18px; font-weight: bold; margin-top: 5px;"></div>
         <button class="menu-btn" onclick="showStartScreen()">মেনুতে যান</button>
     </div>
 
@@ -271,7 +274,7 @@
         </div>
 
         <button class="menu-btn" onclick="togglePause()">
-            ▶ চালিয়ে যান (Resume)
+            ▶ চালিয়ে যান (Resume)
         </button>
         
         <button class="menu-btn" style="background: linear-gradient(90deg, #FFD700, #FFca28); color: black;" onclick="restartGame()">
