@@ -1,13 +1,15 @@
-function animate() {
-    // Other code...
+// Remove the duplicate camera calculation block
+// Assume previous code
 
-    // Remove duplicated assignments
-    // targetScale = ...;  // Original assignment
-    // currentScale = ...;  // Original assignment
-    // targetCamX = ...;  // Original assignment
-    // targetCamY = ...;  // Original assignment
-    // cameraX = ...;  // Original assignment
-    // cameraY = ...;  // Original assignment
+// New code after removal
 
-    // Other code...
+function calculateCamera() {
+    // Original calculation logic goes here
 }
+
+function getCameraPosition() {
+    // Logic to get camera position
+}
+
+// Call the functions as necessary
+calculateCamera();
