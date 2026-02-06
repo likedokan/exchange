@@ -1,0 +1,1568 @@
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap');
+
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #050505;
+    font-family: 'Hind Siliguri', sans-serif;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#gameCanvas { display: block; }
+
+#uiLayer {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none;
+}
+
+
+/* --- ডায়নামিক গ্লাস হোমপেজ --- */
+/* --- প্রো গেমার / ইস্পোর্টস থিম (Esports Edition) --- */
+
+/* ১. ব্যাকগ্রাউন্ড (সাপের চামড়ার মতো প্যাটার্ন) */
+body::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 200%; height: 200%;
+    background-color: #0a0a0a;
+    background-image: 
+        radial-gradient(#1a1a1a 15%, transparent 16%),
+        radial-gradient(#1a1a1a 15%, transparent 16%);
+    background-size: 30px 30px;
+    background-position: 0 0, 15px 15px;
+    z-index: -1;
+    opacity: 1;
+}
+
+/* ২. মেইন কার্ড (শার্প এবং এগ্রেসিভ) */
+#startScreen {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 380px;
+    z-index: 20;
+    font-family: 'Hind Siliguri', sans-serif;
+}
+
+.menu-card {
+    background: rgba(15, 15, 15, 0.95);
+    padding: 40px 30px;
+    border: 2px solid #333;
+    border-top: 4px solid #00e676; /* টপ বর্ডার সবুজ */
+    border-bottom: 4px solid #00e676;
+    box-shadow: 0 0 50px rgba(0, 230, 118, 0.1);
+    text-align: center;
+    position: relative;
+    /* কোণা কাটা ডিজাইন */
+    clip-path: polygon(
+        20px 0, 100% 0, 
+        100% calc(100% - 20px), calc(100% - 20px) 100%, 
+        0 100%, 0 20px
+    );
+}
+
+/* ৩. লোগো এবং টাইটেল */
+.game-logo {
+    font-size: 60px;
+    margin-bottom: 5px;
+    filter: drop-shadow(0 0 10px rgba(0, 230, 118, 0.5));
+}
+
+.title-text {
+    font-size: 36px;
+    font-weight: 900; /* খুব মোটা ফন্ট */
+    font-style: italic; /* বাঁকানো ফন্ট (স্পোর্টস লুক) */
+    margin: 0;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+.title-text span { color: #00e676; } /* "সাপের" সাদা, "যুদ্ধ" সবুজ */
+
+.subtitle {
+    font-size: 11px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    margin-bottom: 30px;
+    font-weight: bold;
+}
+
+/* ৪. ইনপুট বক্স (মডার্ন ডার্ক) */
+.input-group { margin-bottom: 25px; position: relative; }
+
+#playerNameInput {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    padding: 15px;
+    width: 100%;
+    text-align: center;
+    font-size: 16px;
+    color: white;
+    font-weight: bold;
+    outline: none;
+    transition: 0.3s;
+    box-sizing: border-box;
+    border-radius: 4px;
+}
+
+#playerNameInput:focus {
+    border-color: #00e676;
+    background: #000;
+    box-shadow: 0 0 15px rgba(0, 230, 118, 0.2);
+}
+
+/* ৫. স্কিন সিলেক্টর (স্কয়ার শেপ) */
+.skin-label {
+    color: #888; font-size: 12px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;
+}
+
+#skinContainer {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.skin-option {
+    width: 35px; height: 35px;
+    cursor: pointer;
+    transition: 0.2s;
+    border: 2px solid transparent;
+    opacity: 1;
+    transform: skewX(-10deg); /* বাঁকানো শেপ */
+}
+
+.skin-option:hover { opacity: 1; transform: skewX(-10deg) scale(1.1); }
+
+.skin-option.selected {
+    opacity: 1;
+    border: 2px solid white;
+    box-shadow: 0 0 15px var(--skin-color);
+    transform: skewX(-10deg) scale(1.2);
+    z-index: 5;
+}
+
+/* ৬. বাটন (বাঁকানো / Skewed - স্পোর্টস লুক) */
+.menu-btn {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    font-size: 18px;
+    font-weight: 900; /* এক্সট্রা বোল্ড */
+    font-style: italic;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: 'Hind Siliguri', sans-serif;
+    margin-bottom: 12px;
+    transform: skewX(-10deg); /* পুরো বাটন বাঁকানো */
+    transition: 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+/* কন্টেন্ট সোজা রাখার জন্য */
+.menu-btn span { 
+    display: block; 
+    transform: skewX(10deg); /* টেক্সট সোজা করা */
+}
+
+/* প্লে বাটন */
+.play-btn {
+    background: #00e676;
+    color: black;
+}
+.play-btn:hover {
+    background: #00c853;
+    box-shadow: 0 0 20px rgba(0, 230, 118, 0.4);
+    transform: skewX(-10deg) translateY(-2px);
+}
+
+/* সেটিংস বাটন */
+.settings-btn {
+    background: #222;
+    color: white;
+    border: 1px solid #333;
+}
+.settings-btn:hover {
+    background: #333;
+    border-color: #fff;
+    transform: skewX(-10deg) translateY(-2px);
+}
+
+/* সাউন্ড টগল */
+#soundToggle {
+    position: absolute;
+    top: 15px; right: 15px;
+    font-size: 20px;
+    cursor: pointer;
+    color: #555;
+    transition: 0.3s;
+}
+#soundToggle:hover { color: #00e676; }
+
+.footer-text { margin-top: 20px; color: #444; font-size: 10px; letter-spacing: 1px; }
+
+
+/* ৩. গ্লাস কার্ড (মূল ডিজাইন) */
+.menu-content {
+    background: rgba(20, 20, 25, 0.6); /* অনেক স্বচ্ছ */
+    backdrop-filter: blur(20px); /* ব্লার ইফেক্ট */
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 30px;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 
+                inset 0 0 20px rgba(255, 255, 255, 0.05);
+    transition: transform 0.3s;
+}
+
+.menu-content:hover {
+    transform: translateY(-5px); /* মাউস নিলে একটু ভেসে উঠবে */
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6), 
+                inset 0 0 20px rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* লোগো এবং টাইটেল */
+.game-logo {
+    font-size: 80px;
+    margin-bottom: 5px;
+    filter: drop-shadow(0 0 20px rgba(0, 230, 118, 0.4));
+    animation: snakeFloat 4s ease-in-out infinite;
+}
+
+@keyframes snakeFloat {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(-5deg); }
+}
+
+.neon-text {
+    font-size: 2.5em;
+    font-weight: 800;
+    margin: 0;
+    background: linear-gradient(to right, #ffffff, #b0bec5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    letter-spacing: 1px;
+}
+
+.subtitle {
+    font-size: 12px;
+    color: #00e676;
+    background: rgba(0, 230, 118, 0.1);
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-top: 5px;
+    margin-bottom: 25px;
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 1px;
+    border: 1px solid rgba(0, 230, 118, 0.2);
+}
+
+/* ইনপুট ফিল্ড */
+.input-container { width: 100%; margin-bottom: 20px; }
+
+#playerNameInput {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.08);
+    border-radius: 15px;
+    padding: 15px;
+    color: white;
+    font-size: 18px;
+    text-align: center;
+    font-family: 'Hind Siliguri', sans-serif;
+    outline: none;
+    transition: 0.3s;
+    box-sizing: border-box; /* ফিক্স: যাতে প্যাডিং এর কারণে ইনপুট বক্স বড় না হয়ে যায় */
+}
+
+#playerNameInput:focus {
+    border-color: #00e676;
+    background: rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 15px rgba(0, 230, 118, 0.2);
+}
+
+/* স্কিন সিলেক্টর (ভাসমান বল) */
+#skinContainer {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 15px 0 30px 0;
+}
+
+.skin-option {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+}
+
+.skin-option::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    border-radius: 50%;
+    background: inherit;
+    filter: blur(5px);
+    opacity: 0;
+    transition: 0.3s;
+    z-index: -1;
+}
+
+.skin-option:hover { transform: translateY(-5px); }
+.skin-option:hover::before { opacity: 0.6; }
+
+.skin-option.selected {
+    transform: scale(1.2);
+    border-color: white;
+    box-shadow: 0 0 20px currentColor;
+}
+
+/* বাটন (গ্রেডিয়েন্ট গ্লাস) */
+.menu-btn {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 15px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Hind Siliguri', sans-serif;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+}
+
+.play-btn {
+    background: linear-gradient(135deg, #00e676, #00c853);
+    color: #003300;
+    box-shadow: 0 8px 20px rgba(0, 230, 118, 0.3);
+    margin-bottom: 12px;
+}
+
+.play-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(0, 230, 118, 0.4);
+    filter: brightness(1.1);
+}
+
+.play-btn::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: 0.5s;
+}
+.play-btn:hover::after { left: 100%; }
+
+.settings-btn {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 14px;
+}
+
+.settings-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.footer-text {
+    margin-top: 25px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+
+/* লোগো অ্যানিমেশন */
+.game-logo {
+    font-size: 60px;
+    margin-bottom: 5px;
+    animation: bounce 2s infinite ease-in-out;
+    filter: drop-shadow(0 0 20px rgba(0, 230, 118, 0.4));
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-10px) scale(1.1); }
+}
+
+.subtitle {
+    color: #b0bec5;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: -10px;
+    margin-bottom: 20px;
+    opacity: 0.7;
+}
+
+/* ইনপুট ফিল্ড ডিজাইন */
+.input-container {
+    margin: 15px 0;
+    position: relative;
+}
+
+#playerNameInput {
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50px;
+    padding: 12px 25px;
+    color: white;
+    font-size: 18px;
+    font-family: 'Hind Siliguri', sans-serif;
+    text-align: center;
+    width: 70%;
+    outline: none;
+    transition: all 0.3s;
+}
+
+#playerNameInput:focus {
+    border-color: #00e676;
+    box-shadow: 0 0 15px rgba(0, 230, 118, 0.3);
+    background: rgba(0, 0, 0, 0.5);
+}
+
+#playerNameInput::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* বাটন ডিজাইন আপডেট */
+.menu-btn {
+    width: 100%;
+    margin-top: 10px;
+    font-size: 18px;
+    padding: 14px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+}
+
+.play-btn {
+    background: linear-gradient(90deg, #00c853, #64dd17);
+    color: #000;
+    box-shadow: 0 4px 15px rgba(0, 200, 83, 0.4);
+    font-weight: 800;
+    animation: pulseBtn 2s infinite;
+}
+
+@keyframes pulseBtn {
+    0% { box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(0, 230, 118, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 230, 118, 0); }
+}
+
+.settings-btn {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 14px;
+    padding: 10px;
+    margin-top: 10px;
+}
+.settings-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.footer-text {
+    margin-top: 20px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+}
+
+
+/* --- স্কোর এবং হাড ডিজাইন --- */
+.hud-top-left {
+    position: absolute;
+    top: 20px; left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    right: auto;
+    bottom: auto;
+    transform-origin: top left;
+}
+
+.score-box {
+    color: white;
+    font-size: 32px;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.score-label {
+    font-size: 14px;
+    color: #888;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: -5px;
+    letter-spacing: 1px;
+}
+
+.highscore-box {
+    font-size: 14px;
+    color: #ffea00;
+    background: rgba(0,0,0,0.6);
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    border: 1px solid rgba(255, 234, 0, 0.4);
+    box-shadow: 0 0 10px rgba(255, 234, 0, 0.1);
+}
+
+#activePowerUps {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.powerup-icon {
+    font-size: 20px;
+    background: rgba(0,0,0,0.7);
+    padding: 8px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.3);
+    box-shadow: 0 0 15px rgba(255,255,255,0.2);
+    animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
+
+/* --- কিল ফিড --- */
+#killFeed {
+    position: absolute;
+    top: 150px;
+    left: 20px;
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+    transform-origin: top left;
+}
+
+.kill-msg {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    background: linear-gradient(90deg, rgba(20, 20, 20, 0.9) 0%, rgba(0, 0, 0, 0) 100%);
+    padding: 8px 12px;
+    border-radius: 4px;
+    border-left: 3px solid #ff1744;
+    text-shadow: 0 0 5px rgba(0,0,0,0.5);
+    animation: slideInLeft 0.3s ease-out, fadeOut 3s forwards 2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.kill-highlight { color: #ffea00; font-weight: bold; }
+
+@keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+@keyframes fadeOut { to { opacity: 0; transform: translateX(-10px); } }
+
+/* --- লিডারবোর্ড --- */
+#leaderboard {
+    position: absolute;
+    top: 20px; right: 20px;
+    background: rgba(10, 10, 15, 0.85);
+    backdrop-filter: blur(8px);
+    padding: 15px;
+    border-radius: 15px;
+    color: white;
+    font-size: 14px;
+    min-width: 180px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.6);
+    transform-origin: top right;
+}
+
+#leaderboard h3 { 
+    margin: 0 0 12px 0; 
+    color: #00e676; 
+    font-size: 14px; 
+    text-align: center; 
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 8px;
+}
+
+.lb-row { 
+    display: flex; 
+    justify-content: space-between; 
+    margin-bottom: 5px; 
+    padding: 5px 10px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+.lb-row:nth-child(1) { color: #ffea00; text-shadow: 0 0 5px #ffea00; }
+.lb-row:nth-child(2) { color: #e0e0e0; }
+.lb-row:nth-child(3) { color: #cd7f32; }
+
+.lb-me { 
+    background: rgba(0, 230, 118, 0.2); 
+    border: 1px solid rgba(0, 230, 118, 0.3);
+    color: #fff !important;
+}
+
+/* --- মিনিম্যাপ --- */
+#miniMap {
+    position: absolute;
+    bottom: 20px; left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #333;
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(0,0,0,0.6);
+    z-index: 10; 
+    transform-origin: bottom left;
+}
+
+#protectionText {
+    position: absolute;
+    top: 25%;
+    width: 100%;
+    text-align: center;
+    color: #00e676;
+    font-size: 32px;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-shadow: 0 0 20px rgba(0, 230, 118, 0.8);
+    display: none;
+    letter-spacing: 3px;
+    animation: blink 0.5s infinite alternate;
+}
+@keyframes blink { from { opacity: 0.8; } to { opacity: 1; } }
+
+/* --- কন্ট্রোলস --- */
+#controls {
+    position: absolute;
+    bottom: 30px; right: 30px;
+    pointer-events: auto;
+    display: none; 
+    transform-origin: center center;
+}
+
+#boostBtn {
+    width: 80px; height: 80px;
+    background: linear-gradient(135deg, rgba(255,61,0,0.8), rgba(221,44,0,0.8));
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: bold; font-size: 24px;
+    user-select: none; touch-action: manipulation;
+    box-shadow: 0 0 20px rgba(255, 61, 0, 0.5);
+    transition: transform 0.1s;
+}
+#boostBtn:active { transform: scale(0.92); filter: brightness(1.2); }
+
+#joystick-base {
+    position: absolute;
+    width: 120px; height: 120px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    display: none;
+    z-index: 5;
+    backdrop-filter: blur(2px);
+}
+#joystick-stick {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 50px; height: 50px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 15px rgba(255,255,255,0.3);
+}
+
+/* --- মেনু স্ক্রিন --- */
+#startScreen, #gameOverScreen, #pauseScreen, #settingsScreen {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(15, 20, 30, 0.95);
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    color: white;
+    pointer-events: auto;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 60px rgba(0,0,0,0.9);
+    min-width: 340px;
+    z-index: 20;
+    backdrop-filter: blur(12px);
+    display: flex;             /* এই লাইনটি নতুন */
+    flex-direction: column;    /* এই লাইনটি নতুন */
+    align-items: center;       /* এই লাইনটি নতুন */
+}
+
+
+.neon-text {
+    font-size: 2.5em;
+    color: #fff;
+    text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px #00e676, 0 0 30px #00e676, 0 0 40px #00e676;
+    margin: 0 0 10px 0;
+}
+
+#skinContainer {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 30px 0;
+    flex-wrap: wrap;
+}
+
+.skin-option {
+    width: 45px; height: 45px;
+    border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.1);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.skin-option:hover { transform: scale(1.15); }
+.skin-option.selected {
+    border-color: white;
+    transform: scale(1.3);
+    z-index: 2;
+}
+
+button.menu-btn {
+    background: linear-gradient(90deg, #00c853, #64dd17);
+    color: #000; border: none;
+    padding: 15px 50px; font-size: 20px; border-radius: 50px;
+    cursor: pointer; font-family: 'Hind Siliguri', sans-serif;
+    font-weight: 700;
+    margin-top: 20px; 
+    box-shadow: 0 0 20px rgba(0, 200, 83, 0.4);
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+button.menu-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px rgba(0, 200, 83, 0.6);
+}
+button.menu-btn:active { transform: scale(0.95); }
+
+p { margin: 5px 0; color: #b0bec5; font-size: 15px; }
+.hidden { display: none !important; }
+
+/* --- কাস্টম লেআউট সিস্টেম --- */
+.draggable-active {
+    border: 2px dashed #00e676 !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    cursor: grab;
+    touch-action: none;
+    position: absolute !important;
+}
+
+.draggable-selected {
+    border: 2px solid #2979ff !important;
+    background: rgba(41, 121, 255, 0.2) !important;
+    box-shadow: 0 0 15px rgba(41, 121, 255, 0.6);
+    z-index: 100 !important;
+}
+
+.draggable-active:active { cursor: grabbing; }
+
+#layoutEditorControls {
+    position: absolute;
+    bottom: 30px;
+    left: 0; 
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    z-index: 100;
+    pointer-events: none;
+}
+
+.editor-btn {
+    pointer-events: auto;
+    background: #00e676;
+    color: black;
+    padding: 12px 25px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(0, 230, 118, 0.5);
+    font-family: 'Hind Siliguri', sans-serif;
+}
+
+.resize-controls {
+    pointer-events: auto;
+    display: flex;
+    gap: 15px;
+    background: rgba(0,0,0,0.8);
+    padding: 10px 20px;
+    border-radius: 30px;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.resize-btn {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: #2979ff;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.resize-btn:active { transform: scale(0.9); }
+
+/* সেটিংস টগল */
+#soundToggle {
+    position: absolute;
+    top: 20px; right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 50;
+    background: rgba(255,255,255,0.1);
+    padding: 10px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.2);
+    width: 30px; height: 30px;
+    display: flex; justify-content: center; align-items: center;
+}
+
+/* --- নতুন সেটিংস আইকন (উপরে বামে) --- */
+#layoutEditBtn {
+    position: absolute;
+    top: 20px; left: 20px; /* বাম কোণায় পজিশন */
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    width: 30px; height: 30px;
+    display: flex; justify-content: center; align-items: center;
+    color: #ccc;
+    transition: all 0.3s ease;
+}
+
+#layoutEditBtn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    transform: rotate(90deg); /* হোভার করলে ঘুরবে */
+    border-color: #fff;
+}
+
+/* সাধারণ গেমপ্লে চলাকালীন লুকানো এলিমেন্ট */
+.user-hidden {
+    display: none !important;
+}
+
+/* এডিটিং মোড চালু থাকলে লুকানো এলিমেন্ট আবছাভাবে দেখা যাবে */
+body.editing-mode .user-hidden {
+    display: block !important;
+    opacity: 0.3 !important;
+    filter: grayscale(100%);
+    border: 2px dotted #ff1744 !important; /* লাল বর্ডার দিয়ে বোঝাবে এটি লুকানো আছে */
+}
+
+/* ভিজিবিলিটি বাটন (রিসাইজ বাটনের মতোই স্টাইল) */
+#visibilityBtn {
+    background: #6200ea; /* একটু আলাদা কালার */
+}
+
+/* --- শপ বাটন (হোম পেজ) --- */
+#shopBtn {
+    position: absolute;
+    top: 20px; right: 70px;
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    width: 30px; height: 30px;
+    display: flex; justify-content: center; align-items: center;
+    color: #FFD700;
+    transition: all 0.3s ease;
+}
+#shopBtn:hover {
+    background: rgba(255, 215, 0, 0.2);
+    border-color: #FFD700;
+    transform: scale(1.1);
+}
+
+/* --- ফুল পেজ শপ স্ক্রিন --- */
+#shopScreen {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: radial-gradient(circle at center, #1a1a2e 0%, #000000 100%); /* প্রিমিয়াম ব্যাকগ্রাউন্ড */
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    overflow-y: auto; /* ছোট স্ক্রিনে স্ক্রল করার জন্য */
+    padding-bottom: 20px;
+    animation: slideInRight 0.4s ease-out;
+}
+
+/* শপ ওপেন হওয়ার অ্যানিমেশন */
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.coin-display-large {
+    background: rgba(255, 215, 0, 0.1);
+    padding: 10px 30px;
+    border-radius: 50px;
+    color: #FFD700;
+    font-size: 24px;
+    font-weight: bold;
+    border: 2px solid #FFD700;
+    margin-bottom: 30px;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+}
+
+.shop-content {
+    width: 90%;
+    max-width: 800px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+}
+
+/* স্কিন গ্রিড (সাজানো গোছানো) */
+.shop-grid {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 10px;
+}
+
+.shop-footer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+/* শপ পেজের স্কিন অপশনগুলো একটু বড় দেখাবে */
+#shopScreen .skin-option {
+    width: 60px; height: 60px; /* বড় সাইজ */
+}
+
+          /* --- ডেইলি রিওয়ার্ড বক্স ডিজাইন --- */
+.daily-reward-box {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 140, 0, 0.1));
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 15px;
+    padding: 15px 25px;
+    margin-bottom: 25px;
+    width: 90%;
+    max-width: 400px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
+    animation: glowBox 3s infinite alternate;
+}
+
+@keyframes glowBox {
+    from { box-shadow: 0 0 10px rgba(255, 215, 0, 0.1); }
+    to { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+}
+
+.reward-info {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.reward-title {
+    color: #FFD700;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.reward-timer {
+    color: #bbb;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.reward-btn {
+    background: linear-gradient(90deg, #FFD700, #FFca28);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: 'Hind Siliguri', sans-serif;
+    transition: 0.3s;
+    box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3);
+}
+
+.reward-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 15px rgba(255, 215, 0, 0.5);
+}
+
+/* বাটন যখন ডিজেবল (নিষ্ক্রিয়) থাকবে */
+.reward-btn.disabled {
+    background: #333;
+    color: #777;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* =========================================
+   ULTRA-MODERN SHOP DESIGN (HOLOGRAPHIC CYBERPUNK)
+   ========================================= */
+
+/* ১. ব্যাকগ্রাউন্ড: স্পেস এবং নিওন গ্রিড */
+#shopScreen {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    /* ডিপ স্পেস ব্যাকগ্রাউন্ড */
+    background: radial-gradient(circle at 50% 30%, #1a1a2e 0%, #16213e 50%, #000000 100%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 30px;
+    overflow-y: auto;
+    font-family: 'Hind Siliguri', sans-serif;
+    animation: fadeInShop 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* ব্যাকগ্রাউন্ডে অ্যানিমেটেড পার্টিকেল এফেক্ট */
+#shopScreen::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image: 
+        radial-gradient(rgba(0, 229, 255, 0.1) 1px, transparent 1px),
+        radial-gradient(rgba(245, 0, 87, 0.1) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-position: 0 0, 20px 20px;
+    mask-image: radial-gradient(circle at center, black 40%, transparent 80%);
+    -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 80%);
+    z-index: -1;
+    animation: pulseGrid 4s infinite alternate;
+}
+
+@keyframes pulseGrid {
+    0% { opacity: 0.5; transform: scale(1); }
+    100% { opacity: 0.8; transform: scale(1.02); }
+}
+
+@keyframes fadeInShop {
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ২. টাইটেল ডিজাইন (Neon Gradient Text) */
+#shopScreen .neon-text {
+    font-size: 3.5em;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 6px;
+    background: linear-gradient(to right, #00e5ff, #ffffff, #f50057);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 15px rgba(0, 229, 255, 0.5));
+    margin-bottom: 20px;
+    animation: textShine 3s linear infinite;
+}
+
+@keyframes textShine {
+    0% { filter: drop-shadow(0 0 15px rgba(0, 229, 255, 0.5)); }
+    50% { filter: drop-shadow(0 0 25px rgba(245, 0, 87, 0.5)); }
+    100% { filter: drop-shadow(0 0 15px rgba(0, 229, 255, 0.5)); }
+}
+
+/* ৩. কয়েন ডিসপ্লে (Sci-Fi HUD) */
+.coin-display-large {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(0, 229, 255, 0.3);
+    padding: 10px 50px;
+    border-radius: 0;
+    clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%, 0 20%); /* কোণা কাটা */
+    color: #FFD700;
+    font-size: 28px;
+    font-weight: bold;
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.1);
+    backdrop-filter: blur(5px);
+    margin-bottom: 25px;
+    display: flex; align-items: center; gap: 10px;
+    position: relative;
+}
+.coin-display-large::after {
+    content: "";
+    position: absolute;
+    bottom: 0; left: 0; width: 100%; height: 3px;
+    background: linear-gradient(90deg, #00e5ff, transparent);
+}
+
+/* ৪. ডেইলি রিওয়ার্ড কার্ড (Glass Panel) */
+.daily-reward-box {
+    width: 90%;
+    max-width: 550px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 4px solid #f50057;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s;
+}
+.daily-reward-box:hover {
+    transform: scale(1.02);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 15px 50px rgba(0, 229, 255, 0.1);
+}
+
+.reward-title { font-size: 20px; color: white; font-weight: 800; letter-spacing: 1px; }
+.reward-timer { font-size: 12px; color: #00e5ff; margin-top: 5px; font-family: monospace; }
+
+.reward-btn {
+    background: #f50057;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: 0.3s;
+    box-shadow: 0 5px 15px rgba(245, 0, 87, 0.4);
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+.reward-btn:hover { background: #ff4081; transform: translateY(-2px); }
+.reward-btn.disabled { background: #333; color: #777; box-shadow: none; cursor: default; }
+
+/* ৫. মেইন শপ কন্টেইনার */
+.shop-content {
+    width: 90%;
+    max-width: 900px;
+    /* গ্লাস লুক */
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+    margin-bottom: 20px;
+    max-height: 450px;
+    overflow-y: auto;
+}
+.shop-content::-webkit-scrollbar { width: 8px; }
+.shop-content::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; border: 1px solid #555; }
+
+/* ৬. স্কিন গ্রিড */
+.shop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 20px;
+    justify-items: center;
+}
+
+/* ৭. প্রতিটি স্কিন কার্ড (Hexagon Style) */
+#shopScreen .skin-option {
+    width: 80px; height: 80px;
+    border-radius: 15px; /* একটু রাউন্ড */
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    /* JS কালার সেট করবে, আমরা শ্যাডো এবং এফেক্ট দিব */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* স্কিনের উপর গ্লাস এফেক্ট */
+#shopScreen .skin-option::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    border-radius: 15px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+/* হোভার এফেক্ট */
+#shopScreen .skin-option:hover {
+    transform: scale(1.15) translateY(-5px);
+    z-index: 10;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+    border-color: white;
+}
+
+/* সিলেক্টেড স্কিন (Highlight) */
+#shopScreen .skin-option.selected {
+    border: 3px solid #00e5ff;
+    box-shadow: 0 0 25px rgba(0, 229, 255, 0.5);
+    transform: scale(1.2);
+    z-index: 5;
+}
+
+/* টিক চিহ্ন */
+#shopScreen .skin-option.selected::after {
+    content: "✓";
+    position: absolute;
+    top: -10px; right: -10px;
+    background: #00e5ff;
+    color: black;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    font-weight: bold;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    font-size: 14px;
+}
+
+/* ৮. ফুটার বাটনস */
+.shop-footer {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    width: 100%;
+    justify-content: center;
+    padding-bottom: 20px;
+}
+
+#buyBtn {
+    background: linear-gradient(90deg, #ff9100, #ffea00);
+    color: black;
+    font-size: 18px;
+    padding: 15px 50px;
+    border-radius: 50px;
+    border: none;
+    box-shadow: 0 0 20px rgba(255, 160, 0, 0.4);
+    animation: pulseBuy 2s infinite;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+
+@keyframes pulseBuy {
+    0% { box-shadow: 0 0 0 0 rgba(255, 160, 0, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(255, 160, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 160, 0, 0); }
+}
+
+.shop-footer .menu-btn:last-child {
+    background: transparent;
+    border: 2px solid #ff1744;
+    color: #ff1744;
+    padding: 12px 30px;
+    font-size: 16px;
+    width: auto;
+    margin: 0;
+    border-radius: 50px;
+    transition: 0.3s;
+}
+.shop-footer .menu-btn:last-child:hover {
+    background: #ff1744;
+    color: white;
+    box-shadow: 0 0 20px rgba(255, 23, 68, 0.4);
+}
+
+
+/* --- ইন-গেম সেটিংস বাটন --- */
+#inGameSettingsBtn {
+    position: absolute;
+    top: 15px;
+    right: 15px; /* ডান কোণায় */
+    width: 45px; height: 45px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    color: white;
+    font-size: 24px;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    pointer-events: auto; /* ক্লিক করার জন্য জরুরি */
+    z-index: 150; /* সবার উপরে থাকবে */
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+#inGameSettingsBtn:hover {
+    transform: rotate(90deg) scale(1.1);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #00e676;
+    color: #00e676;
+}
+
+/* লিডারবোর্ডকে একটু নিচে নামিয়ে দেওয়া যাতে বাটনের সাথে মিশে না যায় */
+#leaderboard {
+    top: 70px !important; 
+}
+
+/* পজ স্ক্রিন বাটনগুলোর মাঝখানের গ্যাপ */
+#pauseScreen .menu-btn {
+    margin-bottom: 15px;
+    width: 100%;
+    min-width: 250px;
+}
+
+/* --- ওরিয়েন্টেশন বাটন স্টাইল --- */
+.orientation-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Hind Siliguri', sans-serif;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    flex: 1; /* সমান সাইজ */
+}
+
+.orientation-btn:hover {
+    background: #00e676;
+    color: black;
+    border-color: #00e676;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 230, 118, 0.3);
+}
+
+.orientation-btn:active {
+    transform: scale(0.95);
+}
+
+/* --- ফোর্স রোটেশন ক্লাস --- */
+
+/* --- ফোর্স রোটেশন ক্লাস (সংশোধিত) --- */
+
+body.force-landscape {
+    width: 100vh;  /* ডিভাইসের উচ্চতাই হবে গেমের প্রস্থ */
+    height: 100vw; /* ডিভাইসের প্রস্থই হবে গেমের উচ্চতা */
+    
+    position: fixed; /* absolute এর বদলে fixed ব্যবহার করুন */
+    top: 50%;
+    left: 50%;
+    
+    /* সেন্টারে এনে ৯০ ডিগ্রি ঘুরানো */
+    transform: translate(-50%, -50%) rotate(90deg);
+    transform-origin: center center;
+    
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    z-index: 9999;
+    background-color: #050505; /* ফাঁকা জায়গায় কালো রং */
+}
+
+body.force-portrait {
+    width: 100vh;
+    height: 100vw;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-90deg);
+    transform-origin: center center;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    z-index: 9999;
+}
+
+/* --- সেটিংস পেজ ডিজাইন --- */
+#mainSettingsBtn {
+    position: absolute;
+    top: 20px; left: 20px;
+    font-size: 16px;
+    color: white;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px 15px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex; align-items: center; gap: 5px;
+    transition: 0.3s;
+    z-index: 50;
+}
+#mainSettingsBtn:hover { background: rgba(255, 255, 255, 0.2); border-color: #00e676; }
+
+.settings-content {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 25px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 90%; max-width: 400px;
+    display: flex; flex-direction: column; gap: 10px;
+}
+
+.setting-group { margin-bottom: 10px; text-align: left; }
+.setting-label { font-size: 14px; color: #00e676; font-weight: bold; letter-spacing: 1px; }
+.setting-desc { font-size: 11px; color: #888; margin-top: 5px; }
+
+/* গ্রাফিক্স টগল বাটন */
+.toggle-container {
+    display: flex; margin-top: 8px;
+    background: #111; border-radius: 8px; padding: 3px;
+    border: 1px solid #333;
+}
+.toggle-option {
+    flex: 1; text-align: center; padding: 8px;
+    font-size: 12px; cursor: pointer; color: #888;
+    border-radius: 6px; transition: 0.3s; font-weight: bold;
+}
+.toggle-option.selected {
+    background: #00e676; color: black;
+    box-shadow: 0 0 10px rgba(0, 230, 118, 0.4);
+}
+
+/* অন/অফ সুইচ (Switch) */
+.switch-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 10px;
+}
+.switch {
+    position: relative; display: inline-block; width: 50px; height: 26px;
+}
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+    position: absolute; cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #333; transition: .4s; border-radius: 34px;
+}
+.slider:before {
+    position: absolute; content: "";
+    height: 18px; width: 18px; left: 4px; bottom: 4px;
+    background-color: white; transition: .4s; border-radius: 50%;
+}
+input:checked + .slider { background-color: #2979ff; }
+input:checked + .slider:before { transform: translateX(24px); }
+
+#teamScoreBoard {
+    z-index: 100;
+    font-family: 'Hind Siliguri', sans-serif;
+    transition: all 0.3s ease;
+}
+/* --- স্ট্যামিনা বার ডিজাইন --- */
+#staminaContainer {
+    position: absolute;
+    bottom: 120px; /* বুস্ট বাটনের উপরে থাকবে */
+    right: 20px;
+    width: 200px;
+    z-index: 50;
+    pointer-events: none; /* যাতে টাচ বা ক্লিকে সমস্যা না করে */
+    font-family: 'Hind Siliguri', sans-serif;
+    filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));
+}
+
+#staminaBarWrapper {
+    width: 100%;
+    height: 12px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    overflow: hidden; /* যাতে বার বাইরে না যায় */
+    position: relative;
+}
+
+#staminaBar {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #ff9100, #ffea00); /* ইলেকট্রিক হলুদ/কমলা */
+    box-shadow: 0 0 10px #ffea00;
+    transition: width 0.1s linear; /* স্মুথ কমার জন্য */
+}
+
+/* মোবাইল ডিভাইসে পজিশন ঠিক করা */
+@media (max-width: 768px) {
+    #staminaContainer {
+        bottom: 140px; /* মোবাইলে কন্ট্রোলসের জন্য একটু উপরে */
+        right: 15px;
+        width: 150px; /* মোবাইলে একটু ছোট */
+    }
+}
+
+/* --- হেল্থ বার ডিজাইন --- */
+#healthContainer {
+    position: absolute;
+    bottom: 120px; /* স্ট্যামিনা বারের সমান উচ্চতায় */
+    left: 20px;    /* বাম পাশে থাকবে */
+    width: 200px;
+    z-index: 50;
+    pointer-events: none;
+    font-family: 'Hind Siliguri', sans-serif;
+    filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));
+}
+
+#healthBarWrapper {
+    width: 100%;
+    height: 12px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+}
+
+#healthBar {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #ff1744, #d50000); /* লাল রঙ (HP) */
+    box-shadow: 0 0 10px #ff1744;
+    transition: width 0.2s ease-out;
+}
+
+/* মোবাইল ডিভাইসে পজিশন ঠিক করা */
+@media (max-width: 768px) {
+    #healthContainer {
+        bottom: 140px; 
+        left: 15px;
+        width: 150px; 
+    }
+}
